@@ -1,0 +1,62 @@
+{
+    "elementsToDelete": [
+        ".JustifierRowLayout-Incut", 
+        ".banner-view",
+        "[id*='advRsyaReact']",
+        "[id*='yandex-search-banner']",
+        "[id*='kinopoisk-banner']",
+        "[id*='adfox']",
+        "[class*='AppForecastMoney']", 
+        "[class*='topBlockWithMoney']", 
+        "[class*='AppMoneySidebar']", 
+        "[class*='AppMoney_wrap']",
+        "[class*='VertisAds']",
+        "[class*='Card_bottomAdv']", 
+        "[class*='DirectFeature']",
+        "[class*='AdvMastHead']",
+        "[class*='rightAdWrapper']",
+        "[class*='topBannerContainer']",
+        "[class*='contentBottomBlock']",
+        "[class*='VideoViewer-Direct_placement_before-player VideoViewer-Direct_withStore']",
+        "[class*='VideoViewer-Direct_placement_under-player VideoViewer-Direct_withStore']",
+        "[class*='LyricsSidebarAd__Recommendations-sc']",
+        "[class*='ya-recommendation-widget']",
+        "[class*='content--ad']",
+        "[class*='VideoViewer-Direct_placement_video-list']",
+        "[data-testid*='adfox']",
+        "[data-testid*='ommercialBanner']",
+        "[data-testid*='afishaProfit.wrapper']",
+        "[data-test-id*='adfox']",
+        "[data-test-id*='ommercialBanner']",
+        "[data-test-id*='afishaProfit.wrapper']",
+        "[data-zone-name*='headerPromoStreamer']",
+        "[data-apiary-widget-name*='@monetize/HeroBannersCarousel']"
+    ],
+    "elementsToCheck": [
+        "[class*='serp-item_card']",
+        "[class*='JustifierColumnLayout-Item']",
+        "[data-testid*='page-layout_right-column_container']",
+        "[data-test-id*='page-layout_right-column_container']",
+        "[id*='heroBanner']",
+        "[id*='cardRecommendationRoll']",
+        "[id*='marketfrontRecomLayout42/recomLayoutItem']"
+    ],
+    "banWords": [
+        "practicum.yandex.ru", 
+        "skillfactory.ru", 
+        "AdvLabel-Text",
+        "реклама",
+        "Реклама",
+        "РЕКЛАМА",
+        "Отключить рекламу",
+        "отключить рекламу"
+    ],
+    "stopWords": [
+        "neuro_answer", 
+        "нейро", 
+        "futuris_search"
+    ],
+    "elementsToHide": [
+        "[data-auto*='creativeBanner']"
+    ]
+}

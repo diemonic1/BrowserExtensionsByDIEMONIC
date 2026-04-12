@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIEMONIC ADS BLOCK SETTINGS</title>
+    <style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+
+    h1, h2, h4 {
+        margin: 10px 0;
+    }
+
+    h1 {
+        font-size: 20px;
+        color: #ffffff;
+    }
+
+    h2 {
+        font-size: 18px;
+        color: #90caf9;
+    }
+
+    h4 {
+        font-size: 14px;
+        color: #b0b0b0;
+        font-weight: normal;
+    }
+
+    button {
+        background-color: #2f4dd3;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 10px 0;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+        background-color: #1a73e8;
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
+
+    .button-red {
+        background-color: #d32f2f;
+    }
+
+    .button-red:hover {
+        background-color: #b71c1c;
+    }
+
+    .container {
+        display: flex;
+        gap: 12px;
+        padding: 10px;
+        flex-wrap: wrap;
+    }
+
+    .card {
+        background-color: #1e1e1e;
+        border-radius: 10px;
+        padding: 12px;
+        flex: 1;
+        min-width: 250px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        border: 1px solid #2a2a2a;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed; /* одинаковая ширина колонок */
+        margin-top: 8px;
+        border: 1px solid #000; /* внешняя граница */
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #000; /* чёрные бортики */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    th {
+        background-color: #2c2c2c;
+        color: #90caf9;
+        font-weight: normal;
+    }
+
+    tr:nth-child(even) {
+        background-color: #1a1a1a;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #222;
+    }
+
+    tr:hover {
+        background-color: #333;
+    }
+
+    .list-item {
+        padding: 6px 8px;
+        border-bottom: 1px solid #2a2a2a;
+        font-size: 14px;
+    }
+
+    .list-item:last-child {
+        border-bottom: none;
+    }
+
+    .header-block {
+        padding: 10px;
+    }
+
+    .settings-section {
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .settings-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #2f4dd3;
+    }
+</style>
+</head>
+<body>
+    <script src="options.js"></script>
+    <div class="settings-section">
+        <label class="settings-label">
+            <input type="checkbox" id="DIEMONIC_ADS_BLOCK_enabled_checkbox">
+            Расширение включено
+        </label>
+        <label class="settings-label">
+            <input type="checkbox" id="DIEMONIC_ADS_BLOCK_console_log_checkbox">
+            Выводить сообщения в консоль
+        </label>
+    </div>
+    <h2>Удалить конфиги. В них хранится, как удалять рекламу. 
+        После удаления они принудительно обновятся, когда вы попадете на страницу, на которой блокируется реклама.</h2>
+    <button class="button-red" id="DIEMONIC_ADS_BLOCK_resetBtn">Удалить конфиги</button>
+    <button id="DIEMONIC_ADS_BLOCK_openBtn">Открыть конфиги</button>
+
+    <br>
+    <h1>Последнее время проверки конфигов: <span id="DIEMONIC_ADS_BLOCK_latUpdateTime"></span></h1>
+    <div style="display: flex;">
+        <div style="border: 1px solid; padding: 4px;">
+            <h2>elementsToDelete</h2>
+            <h4>Эти элементы удаляются сразу</h4>
+            <div id="DIEMONIC_ADS_BLOCK_elementsToDelete"></div>
+        </div>
+        <div style="border: 1px solid; padding: 4px;">
+            <h2>elementsToCheck</h2>
+            <h4>Эти элементы проверяются. Если в них содержатся banWords, они удаляются</h4>
+            <div id="DIEMONIC_ADS_BLOCK_elementsToCheck"></div>
+        </div>
+        <div style="border: 1px solid; padding: 4px;">
+            <h2>banWords</h2>
+            <div id="DIEMONIC_ADS_BLOCK_banWords"></div>
+        </div>
+        <div style="border: 1px solid; padding: 4px;">
+            <h2>stopWords</h2>
+            <h4>Если elementsToCheck содержат stopWords, они не удаляются</h4>
+            <div id="DIEMONIC_ADS_BLOCK_stopWords"></div>
+        </div>
+        <div style="border: 1px solid; padding: 4px;">
+            <h2>elementsToHide</h2>
+            <h4>Эти элементы скрываются</h4>
+            <div id="DIEMONIC_ADS_BLOCK_elementsToHide"></div>
+        </div>
+    </div>
+</body>
+</html>
