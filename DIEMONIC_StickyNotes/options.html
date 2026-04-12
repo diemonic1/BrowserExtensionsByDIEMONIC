@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>D!EMONIC | Sticky Notes</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📝 D!EMONIC | Sticky Notes</h1>
+      <p class="subtitle">All your highlights and notes in one place</p>
+    </header>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search highlights and notes...">
+      <button id="exportBtn">Export Data</button>
+      <button id="clearAllBtn">Clear All</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="totalHighlights">0</div>
+        <div class="stat-label">Total Highlights</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalNotes">0</div>
+        <div class="stat-label">Sticky Notes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalPages">0</div>
+        <div class="stat-label">Pages Annotated</div>
+      </div>
+    </div>
+
+    <div id="content">
+      <!-- Dynamic content will be inserted here -->
+    </div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

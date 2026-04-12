@@ -1,0 +1,7 @@
+.mImgS {
+    opacity: 0.6;
+}
+
+.mImgS:hover {
+    opacity: 1;
+}

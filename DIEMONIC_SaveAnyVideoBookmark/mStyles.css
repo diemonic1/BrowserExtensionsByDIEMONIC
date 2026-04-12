@@ -1,0 +1,44 @@
+.SaveAnyVideoBookmark_notify {
+    position: fixed;
+    top: -60px;
+    transform: translateX(-50%);
+    background: #555;
+    color: #fff;    
+    font-size: 15px;
+    padding: 7px 9px;
+    border-radius: 10px;
+    z-index: 9999;
+    opacity: 0;
+    left: 23.8%;
+    transition: top 0.4s ease, opacity 0.4s ease;
+
+    background: linear-gradient(-45deg, #282828, #282828, rgb(255, 0, 85), #282828, #282828);
+    background-size: 800% 800%;
+    animation: animationBackGr 2s ease infinite;
+
+    border: solid 1px #b35b78;
+    
+    -webkit-user-select: none; /* Chrome, Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* старый Edge */
+    user-select: none;
+}
+
+.SaveAnyVideoBookmark_notify_show {
+  top: 20px;
+  opacity: 1;
+}
+
+.SaveAnyVideoBookmark_notify_hide {
+  top: -60px;
+  opacity: 0;
+}
+
+@keyframes animationBackGr {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}

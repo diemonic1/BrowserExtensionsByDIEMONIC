@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Notes</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>My Notes</h1>
+    </div>
+    
+    <div class="color-palette">
+      <h3>Highlight Color</h3>
+      <div class="colors" id="ColorsList">
+        <button class="color-btn" data-color="#FFF17A" style="background: #FFF17A;"></button>
+        <button class="color-btn" data-color="#4C9B4F" style="background: #4C9B4F;"></button>
+        <button class="color-btn" data-color="#6095BF" style="background: #6095BF;"></button>
+        <button class="color-btn" data-color="#E9724C" style="background: #E9724C;"></button>
+        <button class="color-btn active" data-color="#2BB797" style="background: #2BB797;"></button>
+        <button class="color-btn" data-color="#BD3D69" style="background: #BD3D69;"></button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="toggleHighlighter" class="btn btn-primary">Enable Highlighter</button>
+      <button id="addStickyNote" class="btn btn-secondary">Add Sticky Note</button>
+      <button id="viewDashboard" class="btn btn-outline">View All Notes</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-number" id="highlightCount">0</span>
+        <span class="stat-label">Highlights</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="noteCount">0</span>
+        <span class="stat-label">Notes</span>
+      </div>
+    </div>
+  </div>
+  <script src="colors.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

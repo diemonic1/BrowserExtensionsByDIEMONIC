@@ -1,0 +1,1 @@
+(()=>{chrome.runtime.addEventListener("message",e=>{if(console.log("content \u6536\u5230\u4E86\u6D88\u606F"),e.data.action==="getImages"){let t=[...document.querySelectorAll("img")].map(s=>s.src);chrome.runtime.postMessage({action:"sendImages",images:t},"*")}});})();
