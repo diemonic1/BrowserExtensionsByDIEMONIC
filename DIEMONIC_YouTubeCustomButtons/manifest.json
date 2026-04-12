@@ -1,4 +1,5 @@
 {
+   "permissions": [ "storage" ],
    "content_scripts": [ {
       "all_frames": true,
       "js": [ "content.js" ],
@@ -18,6 +19,9 @@
    "name": "D!EMONIC | YouTubeCustomButtons",
    "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "0.0.1",
+   "options_ui": {
+      "page": "options.html"
+   },
    "icons": {
       "16": "icon.png",
       "32": "icon.png",

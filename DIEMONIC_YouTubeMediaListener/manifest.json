@@ -4,11 +4,11 @@
       "js": [ "content.js" ],
       "matches": [ "https://www.youtube.com/*" ]
    } ],
-   "description": "Adds new key listening and additional buttons with links in the left menu on YouTube",
+   "description": "Adds additional buttons with links in the left menu on YouTube",
    "host_permissions": [ "https://www.youtube.com/*" ],
    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0z1ybSfPXUNbOMpAzRpEbRA6N5Su5LneuzB2ajVtb7UbYlHWzlmAieckr+dFa5FdzOsK8UthhLlIKkH0ibx3CsecFta1q6oPILboKYYa8e8pt5hWbB6bpHwbu8/4n7QrfqI5X43dOt6GRn0VnobRcC3CF4P/hz2d+UFQTVoZVJfk67ayEzeDyx1gEubJGi11T2HXrIK2duXvNF7V2HOxLLf6+3jzfFgBq5tQ0yZ2Q41G+2KvUO8TZU7aumbYW5fwbKMIpDGBjLAtT5f3jOA8lCP4rm0stAhAg4Gu9zDYmJIWZEA88A1pVdr8mTp27l1aEfAqbzp+DZUI/tT7aLqUZQIDAQAB",
    "manifest_version": 3,
-   "name": "D!EMONIC | YouTube Extender",
+   "name": "D!EMONIC | YouTube Media Listener",
    "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "0.0.1",
    "icons": {

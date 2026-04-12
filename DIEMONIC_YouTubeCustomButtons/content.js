@@ -1,3 +1,16 @@
+// Default settings
+const DEFAULT_SETTINGS = {
+  showDownloadButton: false,
+  protocol: 'ytDlpWebExtension://'
+};
+
+let extensionSettings = { ...DEFAULT_SETTINGS };
+
+// Load settings from chrome.storage
+chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
+  extensionSettings = items;
+});
+
 function onElementReady(el) {
   var div = document.createElement('div'); // Создаёт блок  
 
@@ -37,6 +50,14 @@ function onElementReady(el) {
   </div>`;
 
   el.appendChild(div);
+
+  // Hide download button if disabled in settings
+  if (!extensionSettings.showDownloadButton) {
+    const buttonBack = div.querySelector('.ytDlpWebExtensionButtonBack');
+    if (buttonBack) {
+      buttonBack.style.display = 'none';
+    }
+  }
 
   document.getElementById('iconDownload').src = chrome.runtime.getURL("iconDownload.png");
   document.getElementById('catPilot').src = chrome.runtime.getURL("catPilot.ico");
@@ -133,7 +154,7 @@ function OpenYtDlp() {
 
   navigator.clipboard.writeText(document.URL)
     .then(() => {
-      window.open("ytDlpWebExtension://" + document.URL);
+      window.open(extensionSettings.protocol + document.URL);
     })
     .catch(err => {
       console.log('Something went wrong', err);
