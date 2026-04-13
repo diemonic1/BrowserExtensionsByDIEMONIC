@@ -23,9 +23,9 @@ function loadSettings(callback) {
   });
 }
 
-function dLog(msg, style) {
+function dLog(msg) {
   if (!window.DIEMONIC_ADS_BLOCK_console_log) return;
-  console.log(msg, style);
+  console.log("%c🚫[D!EMONIC ADS BLOCK] " + msg, 'background: #464646b9; color: #ff459cff');
 }
 
 async function DownloadConfigs() {
@@ -59,7 +59,7 @@ async function DownloadConfigs() {
           "DIEMONIC_ADS_BLOCK_last_time_update_configs": (new Date()).toString()
         });
 
-        dLog("%c🚫[DIEMONIC ADS BLOCK] Скачали конфиги", 'background: #464646b9; color: #ff459cff');
+        dLog("Скачали конфиги");
       })
 
       return null;
@@ -182,7 +182,7 @@ function tryDeleteAds() {
     return;
   }
 
-  dLog("%c🚫[DIEMONIC ADS BLOCK] Попытка удалить рекламу. Последнее скачивание конфигов: " + window.DIEMONIC_ADS_BLOCK_last_time_update_configs, 'background: #464646b9; color: #ff459cff');
+  dLog("Попытка удалить рекламу. Последнее скачивание конфигов: " + window.DIEMONIC_ADS_BLOCK_last_time_update_configs);
 
   const elementsToDelete = JSON.parse(window.elementsToDelete);
   const elementsToCheck = JSON.parse(window.elementsToCheck);
@@ -192,14 +192,14 @@ function tryDeleteAds() {
 
   elementsToHide.forEach(element => {
     document.querySelectorAll(element).forEach(el => {
-      dLog("%c🚫[DIEMONIC ADS BLOCK] По правилу совпадения {" + element + "} скрыт элемент " + el, 'background: #464646b9; color: #ff459cff');
+      dLog("По правилу совпадения {" + element + "} скрыт элемент " + el);
       el.style.display = "none";
     });
   });
 
   elementsToDelete.forEach(element => {
     document.querySelectorAll(element).forEach(el => {
-      dLog("%c🚫[DIEMONIC ADS BLOCK] По правилу совпадения {" + element + "} удален элемент " + el, 'background: #464646b9; color: #ff459cff');
+      dLog("По правилу совпадения {" + element + "} удален элемент " + el);
       el.remove();
     });
   });
@@ -211,7 +211,7 @@ function tryDeleteAds() {
       if (!stopWords.some(word => DeletedObject.includes(word.toLowerCase()))) {
         // проверка: содержит ли текст хотя бы одно из слов (как подстроку)
         if (banWords.some(word => DeletedObject.includes(word.toLowerCase()))) {
-          dLog("%c🚫[DIEMONIC ADS BLOCK] По правилу поиска {" + element + "} удален элемент " + DeletedObject, 'background: #464646b9; color: #ff459cff');
+          dLog("По правилу поиска {" + element + "} удален элемент " + DeletedObject);
           el.remove();
         }
       }
