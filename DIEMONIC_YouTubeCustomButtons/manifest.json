@@ -9,7 +9,7 @@
    "description": "Adds a button that opens a locally installed video download program and shows playback time",
    "web_accessible_resources":[
       {
-         "resources": [ "iconDownload.png", "catPilot.ico" ],
+         "resources": [ "iconDownload.png", "catPilot.ico", "iconPreview.png", "iconPreview2.png" ],
          "matches": [ "<all_urls>" ]
       }
    ],

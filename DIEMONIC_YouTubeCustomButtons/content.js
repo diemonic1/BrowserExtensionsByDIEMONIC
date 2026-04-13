@@ -1,6 +1,7 @@
 // Default settings
 const DEFAULT_SETTINGS = {
   showDownloadButton: false,
+  showPreviewButton: false,
   protocol: 'ytDlpWebExtension://'
 };
 
@@ -10,6 +11,27 @@ let extensionSettings = { ...DEFAULT_SETTINGS };
 chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
   extensionSettings = items;
 });
+
+function dLog(msg) {
+  console.log("%c🚫[D!EMONIC YouTubeCustomButtons] " + msg, 'background: #464646b9; color: #ff459cff');
+}
+
+function getThumbnailUrl() {
+  const url = new URL(window.location.href);
+  const videoId = url.searchParams.get("v");
+
+  if (!videoId) return null;
+
+  // Максимальное качество превью
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
+function logThumbnail() {
+  const thumbnail = getThumbnailUrl();
+  if (thumbnail) {
+    dLog("YouTube thumbnail: " + thumbnail);
+  }
+}
 
 function onElementReady(el) {
   var div = document.createElement('div'); // Создаёт блок  
@@ -37,6 +59,9 @@ function onElementReady(el) {
               <img id="iconDownload" class="ytDlpWebExtensionIcon2" src="/iconDownload.png" alt="">
             </div>
         </div>
+        <div class="previewButtonBack">
+          <img id="iconPreview" class="iconPreview" src="/iconPreview.png" alt="">
+        </div>
         <div id="ytDlpWebExtensionButtonBackTime" class="ytDlpWebExtensionButtonBackTime">
             <div id="ytDlpWebExtensionButtonBackTimeInner" class="ytDlpWebExtensionButtonBackTimeInner">
               <div id="ytDlpWebExtensionTime" class="ytDlpWebExtensionTime">
@@ -51,7 +76,6 @@ function onElementReady(el) {
 
   el.appendChild(div);
 
-  // Hide download button if disabled in settings
   if (!extensionSettings.showDownloadButton) {
     const buttonBack = div.querySelector('.ytDlpWebExtensionButtonBack');
     if (buttonBack) {
@@ -59,7 +83,23 @@ function onElementReady(el) {
     }
   }
 
+  const buttonBack = div.querySelector('.previewButtonBack');
+
+  buttonBack.title = "Открыть превью видео в новой вкладке";
+
+  buttonBack.onclick = () => {
+    const thumbnail = getThumbnailUrl();
+    window.open(thumbnail, '_blank');
+  };
+
+  if (!extensionSettings.showPreviewButton) {
+    if (buttonBack) {
+      buttonBack.style.display = 'none';
+    }
+  }
+
   document.getElementById('iconDownload').src = chrome.runtime.getURL("iconDownload.png");
+  document.getElementById('iconPreview').src = chrome.runtime.getURL("iconPreview2.png");
   document.getElementById('catPilot').src = chrome.runtime.getURL("catPilot.ico");
   document.getElementById('ytDlpWebExtensionButton').onclick = OpenYtDlp;
 
@@ -71,6 +111,8 @@ function onElementReady(el) {
   if (!video) {
     console.log('[YouTubeCustomButtons] Видео не найдено');
   } else {
+    logThumbnail();
+
     let lastTime = 0;
 
     video.addEventListener('timeupdate', () => {
