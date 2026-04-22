@@ -2,7 +2,7 @@
 const DEFAULT_SETTINGS = {
   showDownloadButton: false,
   showPreviewButton: false,
-  protocol: 'ytDlpWebExtension://'
+  protocol: "ytDlpWebExtension://",
 };
 
 let extensionSettings = { ...DEFAULT_SETTINGS };
@@ -13,7 +13,10 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
 });
 
 function dLog(msg) {
-  console.log("%c🚫[D!EMONIC YouTubeCustomButtons] " + msg, 'background: #464646b9; color: #ff459cff');
+  console.log(
+    "%c🚫[D!EMONIC YouTubeCustomButtons] " + msg,
+    "background: #464646b9; color: #ff459cff",
+  );
 }
 
 function getThumbnailUrl() {
@@ -34,14 +37,13 @@ function logThumbnail() {
 }
 
 function onElementReady(el) {
-  var div = document.createElement('div'); // Создаёт блок  
+  var div = document.createElement("div"); // Создаёт блок
 
   div.id = "ytDlpWebExtensionContainer";
 
   if (document.URL.includes("playlist")) {
     div.classList = "ytDlpWebExtensionContainerWithMargin";
-  }
-  else {
+  } else {
     div.classList = "ytDlpWebExtensionContainer";
   }
 
@@ -77,45 +79,54 @@ function onElementReady(el) {
   el.appendChild(div);
 
   if (!extensionSettings.showDownloadButton) {
-    const buttonBack = div.querySelector('.ytDlpWebExtensionButtonBack');
+    const buttonBack = div.querySelector(".ytDlpWebExtensionButtonBack");
     if (buttonBack) {
-      buttonBack.style.display = 'none';
+      buttonBack.style.display = "none";
     }
   }
 
-  const buttonBack = div.querySelector('.previewButtonBack');
+  const buttonBack = div.querySelector(".previewButtonBack");
 
   buttonBack.title = "Открыть превью видео в новой вкладке";
 
   buttonBack.onclick = () => {
     const thumbnail = getThumbnailUrl();
-    window.open(thumbnail, '_blank');
+    window.open(thumbnail, "_blank");
   };
 
   if (!extensionSettings.showPreviewButton) {
     if (buttonBack) {
-      buttonBack.style.display = 'none';
+      buttonBack.style.display = "none";
     }
   }
 
-  document.getElementById('iconDownload').src = chrome.runtime.getURL("iconDownload.png");
-  document.getElementById('iconPreview').src = chrome.runtime.getURL("iconPreview2.png");
-  document.getElementById('catPilot').src = chrome.runtime.getURL("catPilot.ico");
-  document.getElementById('ytDlpWebExtensionButton').onclick = OpenYtDlp;
+  document.getElementById("iconDownload").src =
+    chrome.runtime.getURL("iconDownload.png");
+  document.getElementById("iconPreview").src =
+    chrome.runtime.getURL("iconPreview2.png");
+  document.getElementById("catPilot").src =
+    chrome.runtime.getURL("catPilot.ico");
+  document.getElementById("ytDlpWebExtensionButton").onclick = OpenYtDlp;
 
-  const video = document.querySelector('video');
-  const ytDlpWebExtensionTime = document.getElementById('ytDlpWebExtensionTime');
-  const ytDlpWebExtensionButtonBackTime = document.getElementById('ytDlpWebExtensionButtonBackTime');
-  const ytDlpWebExtensionTimeTitleTip = document.getElementById('ytDlpWebExtensionTimeTitleTip');
+  const video = document.querySelector("video");
+  const ytDlpWebExtensionTime = document.getElementById(
+    "ytDlpWebExtensionTime",
+  );
+  const ytDlpWebExtensionButtonBackTime = document.getElementById(
+    "ytDlpWebExtensionButtonBackTime",
+  );
+  const ytDlpWebExtensionTimeTitleTip = document.getElementById(
+    "ytDlpWebExtensionTimeTitleTip",
+  );
 
   if (!video) {
-    console.log('[YouTubeCustomButtons] Видео не найдено');
+    console.log("[YouTubeCustomButtons] Видео не найдено");
   } else {
     logThumbnail();
 
     let lastTime = 0;
 
-    video.addEventListener('timeupdate', () => {
+    video.addEventListener("timeupdate", () => {
       const now = performance.now();
 
       if (now - lastTime < 399) return;
@@ -124,17 +135,22 @@ function onElementReady(el) {
       const current = video.currentTime;
       const duration = video.duration;
 
-      if (current != NaN
-        && current != undefined
-        && duration != NaN
-        && duration != undefined
-        && isFinite(duration)
-        && duration > 0) {
-
-        const percent = ((current / duration) * 100);
+      if (
+        current != NaN &&
+        current != undefined &&
+        duration != NaN &&
+        duration != undefined &&
+        isFinite(duration) &&
+        duration > 0
+      ) {
+        const percent = (current / duration) * 100;
         const percentText = percent.toFixed(1);
 
-        const tipText = percentText + '% просмотрено, ' + formatTime(duration - current) + ' осталось';
+        const tipText =
+          percentText +
+          "% просмотрено, " +
+          formatTime(duration - current) +
+          " осталось";
 
         attachTooltip(ytDlpWebExtensionTimeTitleTip, tipText);
 
@@ -146,9 +162,8 @@ function onElementReady(el) {
         `;
 
         ytDlpWebExtensionTime.innerText =
-          formatTime(current) + ' / ' + formatTime(duration);
-      }
-      else {
+          formatTime(current) + " / " + formatTime(duration);
+      } else {
         ytDlpWebExtensionTime.innerText = "???";
       }
     });
@@ -156,50 +171,50 @@ function onElementReady(el) {
 }
 
 function attachTooltip(element, text) {
-  let tooltip = document.getElementById('custom-tooltip');
+  let tooltip = document.getElementById("custom-tooltip");
 
-  // если тултип уже есть — просто обновим текст
-  if (tooltip) {
-    tooltip.textContent = text;
-  } else {
-    tooltip = document.createElement('div');
-    tooltip.id = 'custom-tooltip';
-    tooltip.textContent = text;
-
+  if (!tooltip) {
+    tooltip = document.createElement("div");
+    tooltip.id = "custom-tooltip";
     tooltip.classList += "tooltip";
-
     document.body.appendChild(tooltip);
   }
 
-  function moveTooltip(e) {
-    tooltip.style.left = e.clientX + 15 + 'px';
-    tooltip.style.top = e.clientY - 15 + 'px';
-  }
+  // обновляем текст через data-атрибут, чтобы слушатели читали свежее значение
+  element.dataset.tooltipText = text;
 
-  function showTooltip(e) {
-    tooltip.textContent = text;
-    tooltip.style.opacity = '1';
-    moveTooltip(e);
-  }
+  tooltip.textContent = element.dataset.tooltipText;
 
-  function hideTooltip() {
-    tooltip.style.opacity = '0';
-  }
+  // добавляем слушатели только один раз
+  if (element.dataset.tooltipBound) return;
+  element.dataset.tooltipBound = "1";
 
-  element.addEventListener('mouseenter', showTooltip);
-  element.addEventListener('mousemove', moveTooltip);
-  element.addEventListener('mouseleave', hideTooltip);
+  element.addEventListener("mouseenter", (e) => {
+    tooltip.textContent = element.dataset.tooltipText;
+    tooltip.style.left = e.clientX + 15 + "px";
+    tooltip.style.top = e.clientY - 35 + "px";
+    tooltip.style.opacity = "1";
+  });
+  element.addEventListener("mousemove", (e) => {
+    tooltip.textContent = element.dataset.tooltipText;
+    tooltip.style.left = e.clientX + 15 + "px";
+    tooltip.style.top = e.clientY - 35 + "px";
+  });
+  element.addEventListener("mouseleave", () => {
+    tooltip.style.opacity = "0";
+  });
 }
 
 function OpenYtDlp() {
   console.log("ytDlpWebExtension: открываем ссылку " + document.URL);
 
-  navigator.clipboard.writeText(document.URL)
+  navigator.clipboard
+    .writeText(document.URL)
     .then(() => {
       window.open(extensionSettings.protocol + document.URL);
     })
-    .catch(err => {
-      console.log('Something went wrong', err);
+    .catch((err) => {
+      console.log("Something went wrong", err);
     });
 }
 
@@ -211,8 +226,8 @@ const formatTime = (t) => {
   const s = total % 60;
 
   return h > 0
-    ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-    : `${m}:${s.toString().padStart(2, '0')}`;
+    ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+    : `${m}:${s.toString().padStart(2, "0")}`;
 };
 
 PlatformLoop();
@@ -220,11 +235,10 @@ PlatformLoop();
 window.onload = function () {
   PlatformLoop();
 
-  window.addEventListener('yt-navigate-finish', () => {
+  window.addEventListener("yt-navigate-finish", () => {
     PlatformLoop();
   });
 };
-
 
 function PlatformLoop() {
   if (document.getElementById("ytDlpWebExtensionContainer")) {
@@ -235,15 +249,13 @@ function PlatformLoop() {
 
   if (document.URL.includes("playlist")) {
     el = document.querySelector(".yt-page-header-view-model__scroll-container");
-  }
-  else {
+  } else {
     el = document.getElementById("owner");
   }
 
   if (el) {
     onElementReady(el);
-  }
-  else {
+  } else {
     setTimeout(function () {
       PlatformLoop();
     }, 1);
