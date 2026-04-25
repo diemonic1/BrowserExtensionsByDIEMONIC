@@ -11,8 +11,7 @@
     "64": "icons/IconSponsorBlocker64px.png",
     "128": "icons/IconSponsorBlocker128px.png",
     "256": "icons/IconSponsorBlocker256px.png",
-    "512": "icons/IconSponsorBlocker512px.png",
-    "1024": "icons/IconSponsorBlocker1024px.png"
+    "512": "icons/IconSponsorBlocker512px.png"
   },
   "permissions": [
     "storage",
