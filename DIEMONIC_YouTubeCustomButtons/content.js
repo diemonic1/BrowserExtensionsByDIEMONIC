@@ -142,9 +142,26 @@ function isVideoPage() {
   return url.includes("/watch?");
 }
 
+function isFullscreen() {
+  const video = document.querySelector("video");
+  if (!video) return false;
+
+  // Проверяем через fullscreenElement
+  if (document.fullscreenElement === video || document.fullscreenElement === video.parentElement) {
+    return true;
+  }
+
+  // Проверяем, занимает ли видео 90% и более экрана по ширине и высоте
+  const rect = video.getBoundingClientRect();
+  const widthPercent = (rect.width / window.innerWidth) * 100;
+  const heightPercent = (rect.height / window.innerHeight) * 100;
+
+  return widthPercent >= 90 && heightPercent >= 90;
+}
+
 function updateButtonVisibility() {
   const container = document.getElementById("DiemonicYouTubeCustomButtonsContainer");
-  const shouldShow = isVideoPage();
+  const shouldShow = isVideoPage() && !isFullscreen();
 
   if (shouldShow) {
     if (!container) {
@@ -153,7 +170,6 @@ function updateButtonVisibility() {
   } else {
     if (container) {
       container.remove();
-      dLog("Контейнер кнопки удален (не видео-страница)");
     }
   }
 }
@@ -169,11 +185,18 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["href", "title"],
+      attributeFilter: ["href", "title", "class"],
     };
 
-    mutationObserver = new MutationObserver(() => {
-      updateButtonVisibility();
+    mutationObserver = new MutationObserver((mutations) => {
+      // Проверяем, изменились ли классы видеоплеера
+      const fullscreenChanged = mutations.some(mutation => {
+        return mutation.target.classList && mutation.target.classList.contains('html5-video-player');
+      });
+
+      if (fullscreenChanged || mutations.some(m => m.type === 'childList')) {
+        updateButtonVisibility();
+      }
     });
 
     mutationObserver.observe(document.body, config);
