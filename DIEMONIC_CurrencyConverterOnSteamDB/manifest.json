@@ -1,0 +1,27 @@
+{
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [ 
+      {
+         "all_frames": true,
+         "css": [ "style.css" ],
+         "js": [ "content.js" ],
+         "matches": ["https://steamdb.info/sub/*", "https://steamdb.info/app/*", "https://steamdb.info/bundle/*"]
+      }
+   ],
+   "description": "Custom currency converter for SteamDB",
+   "host_permissions": [ "https://www.cbr.ru/*" ],
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCGQEA0z1ybSfPXUNbOMpAzRpEbRA6N5Su5LieuzB2ajVtb7UbYlHWzlmAieckz+dFa5FdzOsK8UthhLlIKkH0ibx5CsecFta1q6oPILboKYYa8e8pt5hWbB6bpHwbu8/4n7QrfqI5X43dOt6GRn0VnobRcC3CF4P/hz2d+UFQTVoZVJfk67ayEzeDyx1gEubJGi11T2HXrIK2duXvNF7V2HOxLLf6+3jzfFgBq5tQ0yZ2Q41G+2KvUO8TZU7aumbYW5fwbKMIpDGBjLAtT5f3jOA8lCP4rm0stAhAg4Gu9zDYmJIWZEA88A1pVdr8mTp27l1aEfAqbzp+DZUI/tT7aLqUZQIDAQAB",
+   "manifest_version": 3,
+   "name": "D!EMONIC | Currency Converter On SteamDB",
+   "version": "0.0.1",
+   "permissions": ["storage"],
+      "icons": {
+         "16": "icon.png",
+         "32": "icon.png",
+         "48": "icon.png",  
+         "64": "icon.png",
+         "128": "icon.png"
+      }
+}

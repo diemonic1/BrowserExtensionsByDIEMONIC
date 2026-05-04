@@ -218,34 +218,31 @@ function OpenYtDlp() {
     });
 }
 
-const formatTime = (t) => {
-  const total = Math.floor(t); // убираем дробную часть
+function isVideoPage() {
+  const url = document.URL;
+  return url.includes("/watch?");
+}
 
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
+function isFullscreen() {
+  const video = document.querySelector("video");
+  if (!video) return false;
 
-  return h > 0
-    ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-    : `${m}:${s.toString().padStart(2, "0")}`;
-};
-
-PlatformLoop();
-
-window.onload = function () {
-  PlatformLoop();
-
-  window.addEventListener("yt-navigate-finish", () => {
-    PlatformLoop();
-  });
-};
-
-function PlatformLoop() {
-  if (document.getElementById("ytDlpWebExtensionContainer")) {
-    document.getElementById("ytDlpWebExtensionContainer").remove();
+  // Проверяем через fullscreenElement
+  if (document.fullscreenElement === video || document.fullscreenElement === video.parentElement) {
+    return true;
   }
 
-  let el = undefined;
+  // Проверяем, занимает ли видео 90% и более экрана по ширине и высоте
+  const rect = video.getBoundingClientRect();
+  const widthPercent = (rect.width / window.innerWidth) * 100;
+  const heightPercent = (rect.height / window.innerHeight) * 100;
+
+  return widthPercent >= 90 && heightPercent >= 90;
+}
+
+function updateButtonVisibility() {
+  const container = document.getElementById("DiemonicYouTubeCustomButtonsContainer");
+  const shouldShow = isVideoPage() && !isFullscreen();
 
   if (document.URL.includes("playlist")) {
     el = document.querySelector(".yt-page-header-view-model__scroll-container");
@@ -256,8 +253,51 @@ function PlatformLoop() {
   if (el) {
     onElementReady(el);
   } else {
-    setTimeout(function () {
-      PlatformLoop();
-    }, 1);
+    if (container) {
+      container.remove();
+    }
   }
 }
+
+// MutationObserver для отслеживания изменений в DOM при навигации YouTube
+let mutationObserver;
+
+chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
+  extensionSettings = items;
+
+  function initMutationObserver() {
+    const config = {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "title", "class"],
+    };
+
+    mutationObserver = new MutationObserver((mutations) => {
+      // Проверяем, изменились ли классы видеоплеера
+      const fullscreenChanged = mutations.some(mutation => {
+        return mutation.target.classList && mutation.target.classList.contains('html5-video-player');
+      });
+
+      if (fullscreenChanged || mutations.some(m => m.type === 'childList')) {
+        updateButtonVisibility();
+      }
+    });
+
+    mutationObserver.observe(document.body, config);
+  }
+
+  window.onload = function () {
+    updateButtonVisibility();
+    initMutationObserver();
+
+    // Резервный обработчик для события yt-navigate-finish
+    window.addEventListener("yt-navigate-finish", () => {
+      updateButtonVisibility();
+    });
+  };
+
+  // Первоначальная проверка при загрузке скрипта
+  updateButtonVisibility();
+});
+
