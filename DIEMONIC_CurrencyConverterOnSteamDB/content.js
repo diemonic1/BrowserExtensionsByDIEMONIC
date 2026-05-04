@@ -8,6 +8,16 @@ const SUPPORTED_URL_PREFIXES = [
     "https://steamdb.info/bundle/"
 ];
 
+const TOOLTIP_CURRENCY_MAP = {
+    "A$": "AUD", "AZN": "AZN", "BHD": "BHD", "R$": "BRL", "C$": "CAD",
+    "CHF": "CHF", "元": "CNY", "Kč": "CZK", "kr": "DKK", "€": "EUR",
+    "£": "GBP", "GEL": "GEL", "HK$": "HKD", "Ft": "HUF", "₹": "INR",
+    "¥": "JPY", "₸": "KZT", "₩": "KRW", "NZ$": "NZD", "zł": "PLN",
+    "QAR": "QAR", "RON": "RON", "SAR": "SAR", "S$": "SGD", "SEK": "SEK",
+    "฿": "THB", "TJS": "TJS", "TMT": "TMT", "₺": "TRY", "₴": "UAH",
+    "$": "USD", "₫": "VND", "ZAR": "ZAR"
+};
+
 (async () => {
     const isSupportedPage = SUPPORTED_URL_PREFIXES.some((prefix) => location.href.startsWith(prefix));
     if (!isSupportedPage) {
@@ -46,6 +56,16 @@ const SUPPORTED_URL_PREFIXES = [
         const integer = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
         const fraction = parts[1] === "00" ? "" : `,${parts[1]}`;
         return `${integer}${fraction}`;
+    };
+
+    const formatRublesHtml = (formattedValue) => {
+        const commaIndex = formattedValue.indexOf(",");
+        if (commaIndex === -1) {
+            return `${formattedValue}\u00a0\u20bd`;
+        }
+        const integerPart = formattedValue.slice(0, commaIndex);
+        const fractionalPart = formattedValue.slice(commaIndex);
+        return `${integerPart}<span class="cc-rub-fraction">${fractionalPart}</span>\u00a0\u20bd`;
     };
 
     const sanitizeInput = (text) => String(text || "").replace(/\D+/g, "");
@@ -124,13 +144,13 @@ const SUPPORTED_URL_PREFIXES = [
 
         const inputNumber = toNumberFromInput(state.amount);
         if (!inputNumber) {
-            ui.result.textContent = "0 ₽";
+            ui.result.innerHTML = "0\u00a0\u20bd";
             return;
         }
 
         const converted = roundToTwo(inputNumber * selected.ratePerUnit);
         const formatted = formatGroupedNumber(converted);
-        ui.result.textContent = `${formatted} ₽`;
+        ui.result.innerHTML = formatRublesHtml(formatted);
     };
 
     const savePosition = async () => {
@@ -369,6 +389,105 @@ const SUPPORTED_URL_PREFIXES = [
         }
     };
 
+    const parseTooltipPrice = (text) => {
+        const match = text.trim().match(/^([^\d]*?)([\d\s\u00a0,.]+)([^\d]*)$/);
+        if (!match) return null;
+        const prefix = match[1].trim();
+        const numStr = match[2].replace(/[\s\u00a0]/g, "").replace(",", ".");
+        const suffix = match[3].trim();
+        const amount = Number(numStr);
+        if (!Number.isFinite(amount) || amount <= 0) return null;
+        const symbol = prefix || suffix;
+        const code = TOOLTIP_CURRENCY_MAP[symbol] || null;
+        if (!code) return null;
+        return { amount, code };
+    };
+
+    const convertTooltipPrice = (text) => {
+        if (!state.rates.length) return null;
+        const parsed = parseTooltipPrice(text);
+        if (!parsed) return null;
+        const rate = state.rates.find((r) => r.code === parsed.code);
+        if (!rate) return null;
+        return formatGroupedNumber(roundToTwo(parsed.amount * rate.ratePerUnit));
+    };
+
+    const processTooltipSpan = (span) => {
+        span.querySelectorAll(".cc-tooltip-rub").forEach((el) => el.remove());
+        const nodes = Array.from(span.childNodes);
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes("Price:")) {
+                const bEl = nodes[i + 1];
+                if (bEl && bEl.tagName === "B") {
+                    const rubles = convertTooltipPrice(bEl.textContent);
+                    if (rubles !== null) {
+                        const injected = document.createElement("span");
+                        injected.className = "cc-tooltip-rub";
+                        injected.innerHTML = `<b>${formatRublesHtml(rubles)}</b>`;
+                        bEl.after(injected);
+                    }
+                    break;
+                }
+            }
+        }
+    };
+
+    const initTooltipObserver = () => {
+        const observeTooltipSpan = (tooltip) => {
+            const span = tooltip.querySelector("span");
+            if (!span) return;
+            processTooltipSpan(span);
+            const observer = new MutationObserver(() => {
+                observer.disconnect();
+                processTooltipSpan(span);
+                observer.observe(span, { childList: true, subtree: true, characterData: true });
+            });
+            observer.observe(span, { childList: true, subtree: true, characterData: true });
+        };
+
+        const attachToRoot = (root) => {
+            const existingTooltip = root.querySelector("div.highcharts-tooltip");
+            if (existingTooltip) {
+                setTimeout(() => observeTooltipSpan(existingTooltip), 20);
+                return;
+            }
+            const rootObserver = new MutationObserver((mutations, obs) => {
+                for (const mutation of mutations) {
+                    for (const added of mutation.addedNodes) {
+                        if (added.nodeType !== Node.ELEMENT_NODE) continue;
+                        const found = (added.tagName === "DIV" && added.classList?.contains("highcharts-tooltip"))
+                            ? added
+                            : added.querySelector?.("div.highcharts-tooltip");
+                        if (found) {
+                            obs.disconnect();
+                            setTimeout(() => observeTooltipSpan(found), 20);
+                            return;
+                        }
+                    }
+                }
+            });
+            rootObserver.observe(root, { childList: true, subtree: true });
+        };
+
+        const existingRoots = document.querySelectorAll(".chart-container");
+        existingRoots.forEach(attachToRoot);
+
+        const bodyObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const added of mutation.addedNodes) {
+                    if (added.nodeType !== Node.ELEMENT_NODE) continue;
+                    if (added.classList?.contains("chart-container")) {
+                        attachToRoot(added);
+                    }
+                    added.querySelectorAll?.(".chart-container").forEach(attachToRoot);
+                }
+            }
+        });
+        bodyObserver.observe(document.body, { childList: true, subtree: true });
+    };
+
     await createUI();
     await loadRates();
+    initTooltipObserver();
 })();

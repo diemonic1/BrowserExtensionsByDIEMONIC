@@ -102,3 +102,23 @@
   opacity: 1;
   display: contents;
 }
+
+.cc-tooltip-rub {
+  position: absolute;
+  top: 14px;
+  left: -105px;
+  z-index: 100000;
+  display: block;
+  padding: 2px 8px;
+  background: #e8e8e8;
+  border-radius: 999px;
+  color: #222;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.cc-rub-fraction {
+  color: #8f959f;
+}
