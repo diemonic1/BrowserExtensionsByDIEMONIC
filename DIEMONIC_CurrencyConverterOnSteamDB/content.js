@@ -4,7 +4,8 @@ function dLog(msg) {
 
 const SUPPORTED_URL_PREFIXES = [
     "https://steamdb.info/sub/",
-    "https://steamdb.info/app/"
+    "https://steamdb.info/app/",
+    "https://steamdb.info/bundle/"
 ];
 
 (async () => {
