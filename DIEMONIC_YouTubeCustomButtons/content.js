@@ -1,20 +1,15 @@
 // Default settings
 const DEFAULT_SETTINGS = {
-  showDownloadButton: false,
-  showPreviewButton: false,
+  showDownloadButton: true,
+  showPreviewButton: true,
   protocol: "ytDlpWebExtension://",
 };
 
 let extensionSettings = { ...DEFAULT_SETTINGS };
 
-// Load settings from chrome.storage
-chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
-  extensionSettings = items;
-});
-
 function dLog(msg) {
   console.log(
-    "%c🚫[D!EMONIC YouTubeCustomButtons] " + msg,
+    "%c🚫[D!EMONIC YouTube Custom Buttons] " + msg,
     "background: #464646b9; color: #ff459cff",
   );
 }
@@ -36,56 +31,40 @@ function logThumbnail() {
   }
 }
 
-function onElementReady(el) {
-  var div = document.createElement("div"); // Создаёт блок
-
-  div.id = "ytDlpWebExtensionContainer";
-
-  if (document.URL.includes("playlist")) {
-    div.classList = "ytDlpWebExtensionContainerWithMargin";
-  } else {
-    div.classList = "ytDlpWebExtensionContainer";
-  }
-
-  div.innerHTML = `
-<div 
-      style="
-          opacity: 1;
-          color: black;
-          margin: 0px 9px;
+function onElementReady() {
+  document.body.insertAdjacentHTML('beforebegin', `
+    <div 
+        id="DiemonicYouTubeCustomButtonsContainer"
+        class="DiemonicYouTubeCustomButtonsContainer"
       ">
-      <div class="ytDlpWebExtensionBlock">
-        <div class="ytDlpWebExtensionButtonBack">
-            <div id="ytDlpWebExtensionButton" class="ytDlpWebExtensionButton">
-              <img id="catPilot" class="ytDlpWebExtensionIcon1" src="/catPilot.ico" alt="">
-              <img id="iconDownload" class="ytDlpWebExtensionIcon2" src="/iconDownload.png" alt="">
-            </div>
-        </div>
-        <div class="previewButtonBack">
-          <img id="iconPreview" class="iconPreview" src="/iconPreview.png" alt="">
-        </div>
-        <div id="ytDlpWebExtensionButtonBackTime" class="ytDlpWebExtensionButtonBackTime">
-            <div id="ytDlpWebExtensionButtonBackTimeInner" class="ytDlpWebExtensionButtonBackTimeInner">
-              <div id="ytDlpWebExtensionTime" class="ytDlpWebExtensionTime">
-                ???
+          <div class="DiemonicYouTubeCustomButtonsMove" id="DiemonicYouTubeCustomButtonsMove"></div>
+          <div>
+            <div class="DiemonicYouTubeCustomButtonsBlock">
+              <div class="DiemonicYouTubeCustomButtonsButtonBack">
+                  <div id="DiemonicYouTubeCustomButtonsButton" class="DiemonicYouTubeCustomButtonsButton">
+                    <img id="DiemonicYouTubeCustomButtonscatPilot" class="DiemonicYouTubeCustomButtonsIcon1" src="/catPilot.ico" alt="">
+                    <img id="DiemonicYouTubeCustomButtonsiconDownload" class="DiemonicYouTubeCustomButtonsIcon2" src="/iconDownload.png" alt="">
+                  </div>
               </div>
-              <div id="ytDlpWebExtensionTimeTitleTip" class="ytDlpWebExtensionTimeTitleTip">
+              <div class="DiemonicYouTubeCustomButtonspreviewButtonBack">
+                <img id="DiemonicYouTubeCustomButtonsiconPreview" class="iconPreview" src="/iconPreview.png" alt="">
               </div>
             </div>
-        </div>
-      </div>
-  </div>`;
+          </div>
+    </div>
+  `);
 
-  el.appendChild(div);
+  const buttonBackD = document.querySelector(".DiemonicYouTubeCustomButtonsButtonBack");
+
+  buttonBackD.title = "Скачать видео с помощью: " + extensionSettings.protocol + document.URL;
 
   if (!extensionSettings.showDownloadButton) {
-    const buttonBack = div.querySelector(".ytDlpWebExtensionButtonBack");
-    if (buttonBack) {
-      buttonBack.style.display = "none";
+    if (buttonBackD) {
+      buttonBackD.style.display = "none";
     }
   }
 
-  const buttonBack = div.querySelector(".previewButtonBack");
+  const buttonBack = document.querySelector(".DiemonicYouTubeCustomButtonspreviewButtonBack");
 
   buttonBack.title = "Открыть превью видео в новой вкладке";
 
@@ -100,109 +79,49 @@ function onElementReady(el) {
     }
   }
 
-  document.getElementById("iconDownload").src =
-    chrome.runtime.getURL("iconDownload.png");
-  document.getElementById("iconPreview").src =
-    chrome.runtime.getURL("iconPreview2.png");
-  document.getElementById("catPilot").src =
-    chrome.runtime.getURL("catPilot.ico");
-  document.getElementById("ytDlpWebExtensionButton").onclick = OpenYtDlp;
+  let element = document.getElementById("DiemonicYouTubeCustomButtonsContainer");
+  element.style.left = localStorage.getItem("DiemonicYouTubeCustomButtonsX") + 'px';
+  element.style.top = localStorage.getItem("DiemonicYouTubeCustomButtonsY") + 'px';
+
+  document.getElementById('DiemonicYouTubeCustomButtonsMove').onmousedown = function (event) {
+    let element = document.getElementById('DiemonicYouTubeCustomButtonsContainer');
+
+    moveAt(event.pageX, event.pageY);
+
+    function moveAt(pageX, pageY) {
+      element.style.left = pageX + 'px';
+      element.style.top = (pageY - 5) + 'px';
+    }
+
+    function onMouseMove(event) {
+      moveAt(event.pageX, event.pageY);
+      window.lastX = event.pageX;
+      window.lastY = event.pageY - 5;
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    document.getElementById('DiemonicYouTubeCustomButtonsMove').onmouseup = function () {
+      localStorage.setItem("DiemonicYouTubeCustomButtonsX", window.lastX);
+      localStorage.setItem("DiemonicYouTubeCustomButtonsY", window.lastY);
+
+      document.removeEventListener('mousemove', onMouseMove);
+      document.getElementById('DiemonicYouTubeCustomButtonsMove').onmouseup = null;
+    };
+
+  };
+
+  document.getElementById("DiemonicYouTubeCustomButtonsiconDownload").src = chrome.runtime.getURL("iconDownload.png");
+  document.getElementById("DiemonicYouTubeCustomButtonsiconPreview").src = chrome.runtime.getURL("iconPreview2.png");
+  document.getElementById("DiemonicYouTubeCustomButtonscatPilot").src = chrome.runtime.getURL("catPilot.ico");
+  document.getElementById("DiemonicYouTubeCustomButtonsButton").onclick = OpenYtDlp;
 
   const video = document.querySelector("video");
-  const ytDlpWebExtensionTime = document.getElementById(
-    "ytDlpWebExtensionTime",
-  );
-  const ytDlpWebExtensionButtonBackTime = document.getElementById(
-    "ytDlpWebExtensionButtonBackTime",
-  );
-  const ytDlpWebExtensionTimeTitleTip = document.getElementById(
-    "ytDlpWebExtensionTimeTitleTip",
-  );
-
   if (!video) {
     console.log("[YouTubeCustomButtons] Видео не найдено");
   } else {
     logThumbnail();
-
-    let lastTime = 0;
-
-    video.addEventListener("timeupdate", () => {
-      const now = performance.now();
-
-      if (now - lastTime < 399) return;
-      lastTime = now;
-
-      const current = video.currentTime;
-      const duration = video.duration;
-
-      if (
-        current != NaN &&
-        current != undefined &&
-        duration != NaN &&
-        duration != undefined &&
-        isFinite(duration) &&
-        duration > 0
-      ) {
-        const percent = (current / duration) * 100;
-        const percentText = percent.toFixed(1);
-
-        const tipText =
-          percentText +
-          "% просмотрено, " +
-          formatTime(duration - current) +
-          " осталось";
-
-        attachTooltip(ytDlpWebExtensionTimeTitleTip, tipText);
-
-        ytDlpWebExtensionButtonBackTime.style.background = `
-          conic-gradient(
-            #6e6e6eff ${percent}%,
-            #2b2827 ${percent}%
-          )
-        `;
-
-        ytDlpWebExtensionTime.innerText =
-          formatTime(current) + " / " + formatTime(duration);
-      } else {
-        ytDlpWebExtensionTime.innerText = "???";
-      }
-    });
   }
-}
-
-function attachTooltip(element, text) {
-  let tooltip = document.getElementById("custom-tooltip");
-
-  if (!tooltip) {
-    tooltip = document.createElement("div");
-    tooltip.id = "custom-tooltip";
-    tooltip.classList += "tooltip";
-    document.body.appendChild(tooltip);
-  }
-
-  // обновляем текст через data-атрибут, чтобы слушатели читали свежее значение
-  element.dataset.tooltipText = text;
-
-  tooltip.textContent = element.dataset.tooltipText;
-
-  // добавляем слушатели только один раз
-  if (element.dataset.tooltipBound) return;
-  element.dataset.tooltipBound = "1";
-
-  element.addEventListener("mouseenter", (e) => {
-    tooltip.textContent = element.dataset.tooltipText;
-    tooltip.style.left = e.clientX + 15 + "px";
-    tooltip.style.top = e.clientY - 35 + "px";
-    tooltip.style.opacity = "1";
-  });
-  element.addEventListener("mousemove", (e) => {
-    tooltip.textContent = element.dataset.tooltipText;
-    tooltip.style.left = e.clientX + 15 + "px";
-    tooltip.style.top = e.clientY - 35 + "px";
-  });
-  element.addEventListener("mouseleave", () => {
-    tooltip.style.opacity = "0";
-  });
 }
 
 function OpenYtDlp() {
@@ -244,14 +163,10 @@ function updateButtonVisibility() {
   const container = document.getElementById("DiemonicYouTubeCustomButtonsContainer");
   const shouldShow = isVideoPage() && !isFullscreen();
 
-  if (document.URL.includes("playlist")) {
-    el = document.querySelector(".yt-page-header-view-model__scroll-container");
-  } else {
-    el = document.getElementById("owner");
-  }
-
-  if (el) {
-    onElementReady(el);
+  if (shouldShow) {
+    if (!container) {
+      onElementReady();
+    }
   } else {
     if (container) {
       container.remove();

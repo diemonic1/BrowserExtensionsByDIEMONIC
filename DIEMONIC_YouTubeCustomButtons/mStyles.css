@@ -1,34 +1,49 @@
-.ytDlpWebExtensionContainer {
-    height: 36px; width: 88px;
+.DiemonicYouTubeCustomButtonsContainer {
+    position: fixed;
+    left: 0;
+    top: 0;
+    opacity: 1;
+    z-index: 100000000000000000000000000000;
+    color: black;
+    display: flex;
 }
 
-.ytDlpWebExtensionContainerWithMargin {
-    height: 36px; width: 88px; margin: 13px;
+.DiemonicYouTubeCustomButtonsMove{
+    cursor: pointer; 
+    height: 30px; 
+    width: 10px;
 }
 
-.ytDlpWebExtensionBlock {
+.DiemonicYouTubeCustomButtonsMove:hover{
+    background-color: rgba(255, 0, 0, 0.2);
+}
+
+.DiemonicYouTubeCustomButtonsBlock {
     z-index: 100000;
     position: relative;
     display: flex;
     gap: 7px;
 }
 
-.ytDlpWebExtensionButtonBack {
+.DiemonicYouTubeCustomButtonsButtonBack {
     padding: 5px 6px;
     border-radius: 20px;
     background-color: rgba(255,255,255,0.1);
     display: flex;
     align-content: center;
     justify-content: space-evenly;
+    height: 25px;
+    cursor: pointer;
 }
 
-.previewButtonBack {
+.DiemonicYouTubeCustomButtonspreviewButtonBack {
     padding: 5px 6px;
     border-radius: 20px;
     background-color: rgba(255,255,255,0.1);
     display: flex;
     align-content: center;
     justify-content: space-evenly;
+    height: 25px;
     cursor: pointer;
 }
 
@@ -39,84 +54,27 @@
     height: 20px;
 }
 
-.ytDlpWebExtensionButtonBack:hover {
+.DiemonicYouTubeCustomButtonsButtonBack:hover {
     background-color: rgba(255,255,255,0.2);
 }
 
-.previewButtonBack:hover {
+.DiemonicYouTubeCustomButtonspreviewButtonBack:hover {
     background-color: rgba(255,255,255,0.2);
 }
 
-.ytDlpWebExtensionButtonBackTime {
-    padding: 3px;
-    width: max-content;
-    height: max-content;
-    border-radius: 20px;
-    background-color: rgba(255,255,255,0.1);
-    justify-content: space-evenly;
-    -webkit-user-select: none; /* Chrome, Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* старый Edge */
-    user-select: none;
-}
-
-.ytDlpWebExtensionTimeTitleTip {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-.tooltip {
-    position: fixed;
-    background: #151413;
-    color: #fff;
-    border: solid #000 1px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 15px;
-    pointer-events: none;
-    z-index: 9999;
-    white-space: nowrap;
-    transition: opacity 0.15s;
-    opacity: 0;
-    box-shadow: 9px 8px 12px 2px rgb(0 0 0 / 85%);
-}
-
-.ytDlpWebExtensionButtonBackTimeInner {
-    background-color: #2b2827;
-    display: flex;
-    align-content: center;
-    padding: 5px 6px;
-    border-radius: 20px;
-    position: relative;
-}
-
-.ytDlpWebExtensionButton {
+.DiemonicYouTubeCustomButtonsButton {
     cursor: pointer; 
     display: flex; 
     align-items: center; 
     gap: 4px;
 }
 
-.ytDlpWebExtensionTime {
-    display: flex; 
-    align-items: center; 
-    gap: 4px;
-    color: white;
-    font-size: 15px;
-    min-height: 21px;
-    width: max-content;
-    padding: 0 5px;
-}
-
-.ytDlpWebExtensionIcon1 {
+.DiemonicYouTubeCustomButtonsIcon1 {
     width: 27px;
     height: 27px;
 }
 
-.ytDlpWebExtensionIcon2 {
+.DiemonicYouTubeCustomButtonsIcon2 {
     width: 27px;
     height: 27px;
     position: relative; 
