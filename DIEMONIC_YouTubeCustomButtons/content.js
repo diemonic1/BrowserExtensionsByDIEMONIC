@@ -156,7 +156,7 @@ function isFullscreen() {
   const widthPercent = (rect.width / window.innerWidth) * 100;
   const heightPercent = (rect.height / window.innerHeight) * 100;
 
-  return widthPercent >= 75 && heightPercent >= 90;
+  return widthPercent >= 25 && heightPercent >= 90;
 }
 
 function updateButtonVisibility() {
