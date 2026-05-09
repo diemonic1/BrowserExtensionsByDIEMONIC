@@ -412,25 +412,40 @@ const TOOLTIP_CURRENCY_MAP = {
         return formatGroupedNumber(roundToTwo(parsed.amount * rate.ratePerUnit));
     };
 
-    const processTooltipSpan = (span) => {
-        span.querySelectorAll(".cc-tooltip-rub").forEach((el) => el.remove());
-        const nodes = Array.from(span.childNodes);
+    const tryApplyPriceConversion = (nodes, textMatcher, additionalClass = null) => {
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes("Price:")) {
+            if (node.nodeType === Node.TEXT_NODE && textMatcher(node.textContent)) {
                 const bEl = nodes[i + 1];
                 if (bEl && bEl.tagName === "B") {
                     const rubles = convertTooltipPrice(bEl.textContent);
                     if (rubles !== null) {
                         const injected = document.createElement("span");
                         injected.className = "cc-tooltip-rub";
+                        if (additionalClass) {
+                            injected.classList.add(additionalClass);
+                        }
                         injected.innerHTML = `<b>${formatRublesHtml(rubles)}</b>`;
                         bEl.after(injected);
                     }
-                    break;
+                    return true;
                 }
             }
         }
+        return false;
+    };
+
+    const processTooltipSpan = (span) => {
+        span.querySelectorAll(".cc-tooltip-rub").forEach((el) => el.remove());
+        const nodes = Array.from(span.childNodes);
+
+        // Сначала ищем "Discounted price:"
+        if (tryApplyPriceConversion(nodes, (text) => text.includes("Discounted price:"), "cc-tooltip-rub-bottom")) {
+            return;
+        }
+
+        // Если не нашли "Discounted price:", ищем просто "price:"
+        tryApplyPriceConversion(nodes, (text) => text.includes("Price:") || text.includes("price:"));
     };
 
     const initTooltipObserver = () => {

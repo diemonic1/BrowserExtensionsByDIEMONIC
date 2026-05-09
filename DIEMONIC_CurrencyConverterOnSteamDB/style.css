@@ -119,6 +119,10 @@
   white-space: nowrap;
 }
 
+.cc-tooltip-rub-bottom {
+  top: 30px !important;
+}
+
 .cc-rub-fraction {
   color: #8f959f;
 }
