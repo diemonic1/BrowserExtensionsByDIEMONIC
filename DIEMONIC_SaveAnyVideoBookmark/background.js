@@ -1,17 +1,39 @@
-const FOLDER_NAME = 'Смотреть';
+const DEFAULT_FOLDER_NAME = 'Смотреть';
 const BOOKMARKS_BAR_ID = '1';
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'createBookmark') {
-        getOrCreateFolder(FOLDER_NAME, (folderId) => {
-            chrome.bookmarks.create({
-                parentId: folderId,
-                title: message.title,
-                url: message.url
+        getSettings((settings) => {
+            getOrCreateFolder(settings.folderName, (folderId) => {
+                chrome.bookmarks.create({
+                    parentId: folderId,
+                    title: message.title,
+                    url: message.url
+                });
             });
         });
     }
 });
+
+function getSettings(callback) {
+    chrome.storage.sync.get({
+        folderName: DEFAULT_FOLDER_NAME
+    }, (settings) => {
+        callback({
+            folderName: normalizeFolderName(settings.folderName)
+        });
+    });
+}
+
+function normalizeFolderName(folderName) {
+    if (typeof folderName !== 'string') {
+        return DEFAULT_FOLDER_NAME;
+    }
+
+    const normalizedName = folderName.trim();
+
+    return normalizedName || DEFAULT_FOLDER_NAME;
+}
 
 function getOrCreateFolder(name, callback) {
     // Ищем папку с таким именем

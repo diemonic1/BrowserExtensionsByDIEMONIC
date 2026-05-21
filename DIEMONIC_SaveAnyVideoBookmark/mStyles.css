@@ -9,7 +9,7 @@
     border-radius: 10px;
     z-index: 9999;
     opacity: 0;
-    left: 23.8%;
+    left: var(--save-any-video-bookmark-toast-left, 23.8%);
     transition: top 0.4s ease, opacity 0.4s ease;
 
     background: linear-gradient(-45deg, #282828, #282828, rgb(255, 0, 85), #282828, #282828);
