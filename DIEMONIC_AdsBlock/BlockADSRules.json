@@ -6,6 +6,8 @@
         "[id*='yandex-search-banner']",
         "[id*='kinopoisk-banner']",
         "[id*='adfox']",
+        "[id*='yandex__underheader']",
+        "[id*='tztugvdesktop']",
         "[class*='AppForecastMoney']", 
         "[class*='topBlockWithMoney']", 
         "[class*='AppMoneySidebar']", 
@@ -30,7 +32,8 @@
         "[data-test-id*='ommercialBanner']",
         "[data-test-id*='afishaProfit.wrapper']",
         "[data-zone-name*='headerPromoStreamer']",
-        "[data-apiary-widget-name*='@monetize/HeroBannersCarousel']"
+        "[data-apiary-widget-name*='monetize/HeroBannersCarousel']",
+        "[data-apiary-widget-name*='monetize/HeroCarousel']"
     ],
     "elementsToCheck": [
         "[class*='serp-item_card']",
@@ -57,6 +60,7 @@
         "futuris_search"
     ],
     "elementsToHide": [
-        "[data-auto*='creativeBanner']"
+        "[data-auto*='creativeBanner']",
+        "[data-apiary-widget-name*='marketfront/RecomMediaAdv']"
     ]
 }
