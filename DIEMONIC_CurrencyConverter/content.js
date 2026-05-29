@@ -1,7 +1,3 @@
-function dLog(msg) {
-    console.log("%c🚫[D!EMONIC Custom currency converter for SteamDB] " + msg, 'background: #464646b9; color: #ff459cff');
-}
-
 const SUPPORTED_URL_PREFIXES = [
     "https://steamdb.info/sub/",
     "https://steamdb.info/app/",
@@ -10,12 +6,12 @@ const SUPPORTED_URL_PREFIXES = [
 
 const TOOLTIP_CURRENCY_MAP = {
     "A$": "AUD", "AZN": "AZN", "BHD": "BHD", "R$": "BRL", "C$": "CAD",
-    "CHF": "CHF", "元": "CNY", "Kč": "CZK", "kr": "DKK", "€": "EUR",
-    "£": "GBP", "GEL": "GEL", "HK$": "HKD", "Ft": "HUF", "₹": "INR",
-    "¥": "JPY", "₸": "KZT", "₩": "KRW", "NZ$": "NZD", "zł": "PLN",
+    "CHF": "CHF", "\u5143": "CNY", "K\u010d": "CZK", "kr": "DKK", "\u20ac": "EUR",
+    "\u00a3": "GBP", "GEL": "GEL", "HK$": "HKD", "Ft": "HUF", "\u20b9": "INR",
+    "\u00a5": "JPY", "\u20b8": "KZT", "\u20a9": "KRW", "NZ$": "NZD", "z\u0142": "PLN",
     "QAR": "QAR", "RON": "RON", "SAR": "SAR", "S$": "SGD", "SEK": "SEK",
-    "฿": "THB", "TJS": "TJS", "TMT": "TMT", "₺": "TRY", "₴": "UAH",
-    "$": "USD", "₫": "VND", "ZAR": "ZAR"
+    "\u0e3f": "THB", "TJS": "TJS", "TMT": "TMT", "\u20ba": "TRY", "\u20b4": "UAH",
+    "$": "USD", "\u20ab": "VND", "ZAR": "ZAR"
 };
 
 (async () => {
@@ -28,25 +24,21 @@ const TOOLTIP_CURRENCY_MAP = {
         position: "converter_position",
         currency: "converter_currency",
         amount: "converter_amount",
-        cbrUnavailable: "converter_cbr_unavailable",
-        cachedRates: "converter_cached_rates"
+        cbrUnavailable: "converter_cbr_unavailable"
     };
 
     const CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp";
-
     const storageGet = (keys) => new Promise((resolve) => chrome.storage.local.get(keys, resolve));
     const storageSet = (obj) => new Promise((resolve) => chrome.storage.local.set(obj, resolve));
-    const getCbrXmlFromBackground = () => new Promise((resolve) => {
-        chrome.runtime.sendMessage({ type: "fetch-cbr-xml" }, (response) => {
-            if (chrome.runtime.lastError || !response || !response.ok || !response.xml) {
-                resolve(null);
+    const sendMessage = (message) => new Promise((resolve) => {
+        chrome.runtime.sendMessage(message, (response) => {
+            if (chrome.runtime.lastError) {
+                resolve({ ok: false });
                 return;
             }
-            resolve(response.xml);
+            resolve(response || { ok: false });
         });
     });
-
-    const parseCbrNumber = (value) => Number(String(value).replace(/\s+/g, "").replace(",", "."));
 
     const roundToTwo = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
 
@@ -69,55 +61,12 @@ const TOOLTIP_CURRENCY_MAP = {
     };
 
     const sanitizeInput = (text) => String(text || "").replace(/\D+/g, "");
-
-    const formatInputValue = (text) => {
-        const raw = sanitizeInput(text);
-        return raw.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    };
-
-    const toNumberFromInput = (text) => {
-        const raw = sanitizeInput(text);
-        if (!raw) {
-            return 0;
-        }
-        return Number(raw);
-    };
-
-    const xmlToRates = (xmlString) => {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(xmlString, "text/xml");
-        if (xml.querySelector("parsererror")) {
-            return [];
-        }
-        const valutes = Array.from(xml.querySelectorAll("Valute"));
-
-        const rates = valutes
-            .map((node) => {
-                const charCode = node.querySelector("CharCode")?.textContent?.trim() || "";
-                const name = node.querySelector("Name")?.textContent?.trim() || "";
-                const nominalText = node.querySelector("Nominal")?.textContent?.trim() || "";
-                const valueText = node.querySelector("Value")?.textContent?.trim() || "";
-                const nominal = parseCbrNumber(nominalText);
-                const value = parseCbrNumber(valueText);
-                if (!charCode || !name || !nominal || !value) {
-                    return null;
-                }
-                return {
-                    code: charCode,
-                    name,
-                    nominal,
-                    value,
-                    ratePerUnit: value / nominal
-                };
-            })
-            .filter(Boolean);
-
-        rates.sort((a, b) => a.name.localeCompare(b.name, "ru"));
-        return rates;
-    };
+    const formatInputValue = (text) => sanitizeInput(text).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const toNumberFromInput = (text) => Number(sanitizeInput(text) || "0");
 
     const state = {
-        rates: [],
+        ratesMap: null,
+        ratesMeta: null,
         selectedCode: "",
         amount: "",
         unavailable: false,
@@ -136,9 +85,9 @@ const TOOLTIP_CURRENCY_MAP = {
     };
 
     const renderResult = () => {
-        const selected = state.rates.find((item) => item.code === state.selectedCode);
-        if (!selected) {
-            ui.result.textContent = "Выберите валюту";
+        const rate = state.ratesMap ? state.ratesMap[state.selectedCode] : null;
+        if (!rate) {
+            ui.result.textContent = "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0430\u043b\u044e\u0442\u0443";
             return;
         }
 
@@ -148,9 +97,8 @@ const TOOLTIP_CURRENCY_MAP = {
             return;
         }
 
-        const converted = roundToTwo(inputNumber * selected.ratePerUnit);
-        const formatted = formatGroupedNumber(converted);
-        ui.result.innerHTML = formatRublesHtml(formatted);
+        const converted = roundToTwo(inputNumber * rate);
+        ui.result.innerHTML = formatRublesHtml(formatGroupedNumber(converted));
     };
 
     const savePosition = async () => {
@@ -178,22 +126,18 @@ const TOOLTIP_CURRENCY_MAP = {
 
     const adjustSelectWidth = () => {
         const selectedOption = ui.select.options[ui.select.selectedIndex];
-        if (!selectedOption) return;
+        if (!selectedOption) {
+            return;
+        }
         const tempDiv = document.createElement("div");
         tempDiv.style.position = "absolute";
         tempDiv.style.visibility = "hidden";
         tempDiv.style.whiteSpace = "nowrap";
-        const styles = window.getComputedStyle(ui.select);
-        tempDiv.style.fontFamily = styles.fontFamily;
-        tempDiv.style.fontSize = styles.fontSize;
-        tempDiv.style.fontWeight = styles.fontWeight;
-        tempDiv.style.letterSpacing = styles.letterSpacing;
-        tempDiv.style.padding = styles.padding;
         tempDiv.textContent = selectedOption.textContent;
         document.body.appendChild(tempDiv);
         const width = tempDiv.offsetWidth + 2;
         document.body.removeChild(tempDiv);
-        ui.select.style.width = width + "px";
+        ui.select.style.width = `${width}px`;
     };
 
     const createUI = async () => {
@@ -214,7 +158,7 @@ const TOOLTIP_CURRENCY_MAP = {
         const dragHandle = document.createElement("button");
         dragHandle.type = "button";
         dragHandle.className = "cc-drag-handle";
-        dragHandle.setAttribute("aria-label", "Переместить");
+        dragHandle.setAttribute("aria-label", "Move");
 
         const top = document.createElement("div");
         top.className = "cc-top";
@@ -227,32 +171,29 @@ const TOOLTIP_CURRENCY_MAP = {
         input.type = "text";
         input.inputMode = "numeric";
         input.autocomplete = "off";
-        input.placeholder = "Введите число";
+        input.placeholder = "Amount";
         input.value = formatInputValue(state.amount);
 
         const select = document.createElement("select");
         select.className = "cc-select";
 
-        inputWrap.appendChild(input);
-        inputWrap.appendChild(select);
-
         const result = document.createElement("div");
         result.className = "cc-result";
-
-        top.appendChild(inputWrap);
 
         const errorLink = document.createElement("a");
         errorLink.className = "cc-error-link";
         errorLink.href = CBR_URL;
         errorLink.target = "_blank";
         errorLink.rel = "noopener noreferrer";
-        errorLink.textContent = "Не удалось скачать данные";
+        errorLink.textContent = "Could not download currency rates";
 
+        inputWrap.appendChild(input);
+        inputWrap.appendChild(select);
+        top.appendChild(inputWrap);
         root.appendChild(dragHandle);
         root.appendChild(top);
         root.appendChild(result);
         root.appendChild(errorLink);
-
         document.body.appendChild(root);
 
         ui.root = root;
@@ -333,22 +274,21 @@ const TOOLTIP_CURRENCY_MAP = {
         });
     };
 
-    const fillCurrencies = () => {
+    const fillCurrencies = async () => {
         ui.select.innerHTML = "";
-
-        state.rates.forEach((rate) => {
+        const codes = Object.keys(state.ratesMap || {}).filter((code) => code !== "RUB").sort();
+        codes.forEach((code) => {
             const option = document.createElement("option");
-            option.value = rate.code;
-            option.textContent = `${rate.name} (${rate.code})`;
+            const name = state.ratesMeta && state.ratesMeta[code] ? state.ratesMeta[code].name : code;
+            option.value = code;
+            option.textContent = `${name} (${code})`;
             ui.select.appendChild(option);
         });
 
-        const fallbackCode = state.rates.some((item) => item.code === "USD")
-            ? "USD"
-            : (state.rates[0]?.code || "");
-
-        if (!state.selectedCode || !state.rates.some((item) => item.code === state.selectedCode)) {
+        const fallbackCode = codes.includes("USD") ? "USD" : (codes[0] || "");
+        if (!state.selectedCode || !codes.includes(state.selectedCode)) {
             state.selectedCode = fallbackCode;
+            await storageSet({ [STORAGE_KEYS.currency]: state.selectedCode });
         }
 
         ui.select.value = state.selectedCode;
@@ -356,81 +296,71 @@ const TOOLTIP_CURRENCY_MAP = {
     };
 
     const loadRates = async () => {
-        try {
-            const xmlText = await getCbrXmlFromBackground();
-            if (!xmlText) {
-                throw new Error("CBR request failed");
-            }
-            const rates = xmlToRates(xmlText);
-            if (!rates.length) {
-                throw new Error("Empty rates");
-            }
-            state.rates = rates;
-            await storageSet({ [STORAGE_KEYS.cachedRates]: rates });
-            fillCurrencies();
-            await updateUnavailableState(false);
-            dLog("CBR XML downloaded: success");
-            renderResult();
-        } catch (_) {
-            const cachedData = await storageGet([STORAGE_KEYS.cachedRates]);
-            const cachedRates = Array.isArray(cachedData[STORAGE_KEYS.cachedRates])
-                ? cachedData[STORAGE_KEYS.cachedRates]
-                : [];
-            if (cachedRates.length) {
-                state.rates = cachedRates;
-                fillCurrencies();
-                renderResult();
-            }
+        const bundle = await sendMessage({ type: "rates:get" });
+        if (!bundle || !bundle.ok || !bundle.rates) {
             await updateUnavailableState(true);
-            dLog("CBR XML downloaded: failed");
-            if (!state.rates.length) {
-                ui.result.textContent = "Нет данных для конвертации";
-            }
+            ui.result.textContent = "No data";
+            return;
         }
+
+        state.ratesMap = bundle.rates;
+        state.ratesMeta = bundle.meta || {};
+        await fillCurrencies();
+        await updateUnavailableState(bundle.source === "stale-cache" || bundle.source === "fallback-cache");
+        renderResult();
     };
 
     const parseTooltipPrice = (text) => {
-        const match = text.trim().match(/^([^\d]*?)([\d\s\u00a0,.]+)([^\d]*)$/);
-        if (!match) return null;
+        const match = String(text || "").trim().match(/^([^\d]*?)([\d\s\u00a0,.]+)([^\d]*)$/);
+        if (!match) {
+            return null;
+        }
         const prefix = match[1].trim();
-        const numStr = match[2].replace(/[\s\u00a0]/g, "").replace(",", ".");
         const suffix = match[3].trim();
-        const amount = Number(numStr);
-        if (!Number.isFinite(amount) || amount <= 0) return null;
         const symbol = prefix || suffix;
         const code = TOOLTIP_CURRENCY_MAP[symbol] || null;
-        if (!code) return null;
+        if (!code) {
+            return null;
+        }
+
+        const numStr = match[2].replace(/[\s\u00a0]/g, "").replace(",", ".");
+        const amount = Number(numStr);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            return null;
+        }
         return { amount, code };
     };
 
     const convertTooltipPrice = (text) => {
-        if (!state.rates.length) return null;
         const parsed = parseTooltipPrice(text);
-        if (!parsed) return null;
-        const rate = state.rates.find((r) => r.code === parsed.code);
-        if (!rate) return null;
-        return formatGroupedNumber(roundToTwo(parsed.amount * rate.ratePerUnit));
+        if (!parsed || !state.ratesMap || !state.ratesMap[parsed.code]) {
+            return null;
+        }
+        return formatGroupedNumber(roundToTwo(parsed.amount * state.ratesMap[parsed.code]));
     };
 
-    const tryApplyPriceConversion = (nodes, textMatcher, additionalClass = null) => {
-        for (let i = 0; i < nodes.length; i++) {
+    const tryApplyPriceConversion = (nodes, textMatcher, additionalClass) => {
+        for (let i = 0; i < nodes.length; i += 1) {
             const node = nodes[i];
-            if (node.nodeType === Node.TEXT_NODE && textMatcher(node.textContent)) {
-                const bEl = nodes[i + 1];
-                if (bEl && bEl.tagName === "B") {
-                    const rubles = convertTooltipPrice(bEl.textContent);
-                    if (rubles !== null) {
-                        const injected = document.createElement("span");
-                        injected.className = "cc-tooltip-rub";
-                        if (additionalClass) {
-                            injected.classList.add(additionalClass);
-                        }
-                        injected.innerHTML = `<b>${formatRublesHtml(rubles)}</b>`;
-                        bEl.after(injected);
-                    }
-                    return true;
-                }
+            if (node.nodeType !== Node.TEXT_NODE || !textMatcher(node.textContent)) {
+                continue;
             }
+            const bEl = nodes[i + 1];
+            if (!bEl || bEl.tagName !== "B") {
+                continue;
+            }
+
+            const rubles = convertTooltipPrice(bEl.textContent);
+            if (rubles !== null) {
+                const injected = document.createElement("span");
+                injected.className = "cc-tooltip-rub";
+                if (additionalClass) {
+                    injected.classList.add(additionalClass);
+                }
+                injected.innerHTML = `<b>${formatRublesHtml(rubles)}</b>`;
+                bEl.after(injected);
+            }
+            return true;
         }
         return false;
     };
@@ -438,20 +368,22 @@ const TOOLTIP_CURRENCY_MAP = {
     const processTooltipSpan = (span) => {
         span.querySelectorAll(".cc-tooltip-rub").forEach((el) => el.remove());
         const nodes = Array.from(span.childNodes);
-
-        // Сначала ищем "Discounted price:"
-        if (tryApplyPriceConversion(nodes, (text) => text.includes("Discounted price:"), "cc-tooltip-rub-bottom")) {
+        if (tryApplyPriceConversion(nodes, (text) => String(text).includes("Discounted price:"), "cc-tooltip-rub-bottom")) {
             return;
         }
-
-        // Если не нашли "Discounted price:", ищем просто "price:"
-        tryApplyPriceConversion(nodes, (text) => text.includes("Price:") || text.includes("price:"));
+        tryApplyPriceConversion(nodes, (text) => {
+            const t = String(text);
+            return t.includes("Price:") || t.includes("price:");
+        });
     };
 
     const initTooltipObserver = () => {
         const observeTooltipSpan = (tooltip) => {
             const span = tooltip.querySelector("span");
-            if (!span) return;
+            if (!span) {
+                return;
+            }
+
             processTooltipSpan(span);
             const observer = new MutationObserver(() => {
                 observer.disconnect();
@@ -467,10 +399,13 @@ const TOOLTIP_CURRENCY_MAP = {
                 setTimeout(() => observeTooltipSpan(existingTooltip), 20);
                 return;
             }
+
             const rootObserver = new MutationObserver((mutations, obs) => {
                 for (const mutation of mutations) {
                     for (const added of mutation.addedNodes) {
-                        if (added.nodeType !== Node.ELEMENT_NODE) continue;
+                        if (added.nodeType !== Node.ELEMENT_NODE) {
+                            continue;
+                        }
                         const found = (added.tagName === "DIV" && added.classList?.contains("highcharts-tooltip"))
                             ? added
                             : added.querySelector?.("div.highcharts-tooltip");
@@ -485,13 +420,13 @@ const TOOLTIP_CURRENCY_MAP = {
             rootObserver.observe(root, { childList: true, subtree: true });
         };
 
-        const existingRoots = document.querySelectorAll(".chart-container");
-        existingRoots.forEach(attachToRoot);
-
+        document.querySelectorAll(".chart-container").forEach(attachToRoot);
         const bodyObserver = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 for (const added of mutation.addedNodes) {
-                    if (added.nodeType !== Node.ELEMENT_NODE) continue;
+                    if (added.nodeType !== Node.ELEMENT_NODE) {
+                        continue;
+                    }
                     if (added.classList?.contains("chart-container")) {
                         attachToRoot(added);
                     }
