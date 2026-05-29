@@ -1,18 +1,40 @@
+/*
+
+проверка видосов
+
+https://www.youtube.com/watch?v=qDd7QZViETU
+https://www.youtube.com/watch?v=B66v-00Huoc&t=16s
+https://www.youtube.com/watch?v=ZtM8Hs2i0Z8&list=PLU0Epqj8vvkBqtUu6PVzXeYPen9WJ8tlZ&index=13
+https://www.youtube.com/watch?v=Di6auL8EfaY
+
+*/
+
 // Default settings
 const DEFAULT_SETTINGS = {
   showDownloadButton: true,
   showPreviewButton: true,
   protocol: "ytDlpWebExtension://",
+  enableLogs: true,
 };
 
 let extensionSettings = { ...DEFAULT_SETTINGS };
 
 function dLog(msg) {
+  if (!extensionSettings.enableLogs) return;
+
   console.log(
     "%c🚫[D!EMONIC YouTube Custom Buttons] " + msg,
     "background: #464646b9; color: #ff459cff",
   );
 }
+
+const UPDATE_THROTTLE_MS = 500;
+const FOLLOW_UP_UPDATES_COUNT = 5;
+const FOLLOW_UP_UPDATE_INTERVAL_MS = 1000;
+
+let lastVisibilityUpdateAt = 0;
+let throttledVisibilityTimer = null;
+let followUpVisibilityTimers = [];
 
 function getThumbnailUrl() {
   const url = new URL(window.location.href);
@@ -118,14 +140,14 @@ function onElementReady() {
 
   const video = document.querySelector("video");
   if (!video) {
-    console.log("[YouTubeCustomButtons] Видео не найдено");
+    dLog("[YouTubeCustomButtons] Видео не найдено");
   } else {
     logThumbnail();
   }
 }
 
 function OpenYtDlp() {
-  console.log("ytDlpWebExtension: открываем ссылку " + document.URL);
+  dLog("ytDlpWebExtension: открываем ссылку " + document.URL);
 
   navigator.clipboard
     .writeText(document.URL)
@@ -133,7 +155,7 @@ function OpenYtDlp() {
       window.open(extensionSettings.protocol + document.URL);
     })
     .catch((err) => {
-      console.log("Something went wrong", err);
+      dLog("Something went wrong: " + String(err));
     });
 }
 
@@ -156,10 +178,12 @@ function isFullscreen() {
   const widthPercent = (rect.width / window.innerWidth) * 100;
   const heightPercent = (rect.height / window.innerHeight) * 100;
 
-  return widthPercent >= 25 && heightPercent >= 90;
+  dLog(`Видео занимает ${widthPercent.toFixed(2)}% по ширине и ${heightPercent.toFixed(2)}% по высоте экрана`);
+
+  return widthPercent >= 25 && heightPercent >= 90 || widthPercent >= 90;
 }
 
-function updateButtonVisibility() {
+function runUpdateButtonVisibility() {
   const container = document.getElementById("DiemonicYouTubeCustomButtonsContainer");
   const shouldShow = isVideoPage() && !isFullscreen();
 
@@ -174,37 +198,65 @@ function updateButtonVisibility() {
   }
 }
 
-// MutationObserver для отслеживания изменений в DOM при навигации YouTube
-let mutationObserver;
+function scheduleFollowUpVisibilityUpdates() {
+  followUpVisibilityTimers.forEach((timerId) => clearTimeout(timerId));
+  followUpVisibilityTimers = [];
+
+  for (let i = 1; i <= FOLLOW_UP_UPDATES_COUNT; i += 1) {
+    const timerId = setTimeout(() => {
+      updateButtonVisibility(false);
+    }, i * FOLLOW_UP_UPDATE_INTERVAL_MS);
+
+    followUpVisibilityTimers.push(timerId);
+  }
+}
+
+function updateButtonVisibility(scheduleFollowUps = true) {
+  const now = Date.now();
+  const elapsed = now - lastVisibilityUpdateAt;
+
+  if (elapsed >= UPDATE_THROTTLE_MS) {
+    lastVisibilityUpdateAt = now;
+    runUpdateButtonVisibility();
+  } else if (!throttledVisibilityTimer) {
+    throttledVisibilityTimer = setTimeout(() => {
+      throttledVisibilityTimer = null;
+      lastVisibilityUpdateAt = Date.now();
+      runUpdateButtonVisibility();
+    }, UPDATE_THROTTLE_MS - elapsed);
+  }
+
+  if (scheduleFollowUps) {
+    scheduleFollowUpVisibilityUpdates();
+  }
+}
+
+// Обновляем видимость кнопок по пользовательской активности и fullscreen-событиям
+let hasUserActivityListeners = false;
 
 chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
   extensionSettings = items;
 
-  function initMutationObserver() {
-    const config = {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["href", "title", "class"],
+  function initUserActivityListeners() {
+    if (hasUserActivityListeners) return;
+    hasUserActivityListeners = true;
+
+    const handleUserActivity = () => {
+      updateButtonVisibility();
     };
 
-    mutationObserver = new MutationObserver((mutations) => {
-      // Проверяем, изменились ли классы видеоплеера
-      const fullscreenChanged = mutations.some(mutation => {
-        return mutation.target.classList && mutation.target.classList.contains('html5-video-player');
-      });
-
-      if (fullscreenChanged || mutations.some(m => m.type === 'childList')) {
-        updateButtonVisibility();
-      }
-    });
-
-    mutationObserver.observe(document.body, config);
+    window.addEventListener("keydown", handleUserActivity, true);
+    window.addEventListener("keyup", handleUserActivity, true);
+    window.addEventListener("mousedown", handleUserActivity, true);
+    window.addEventListener("mouseup", handleUserActivity, true);
+    window.addEventListener("click", handleUserActivity, true);
+    window.addEventListener("wheel", handleUserActivity, true);
+    document.addEventListener("fullscreenchange", handleUserActivity);
   }
 
   window.onload = function () {
     updateButtonVisibility();
-    initMutationObserver();
+    initUserActivityListeners();
 
     // Резервный обработчик для события yt-navigate-finish
     window.addEventListener("yt-navigate-finish", () => {

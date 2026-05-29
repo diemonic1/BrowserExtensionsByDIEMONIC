@@ -4,6 +4,13 @@
   color: #b9a074;
   left: 58%;
   font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.diemonic-custom-label-div:hover {
+  color: #c9b085;
+  transform: translateY(-2px);
 }
 
 #diemonic-progress-root {

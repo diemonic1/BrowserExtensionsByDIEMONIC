@@ -230,8 +230,12 @@ async function addTestDivForUniqueAppLinks() {
         const div = document.createElement('div');
         div.className = 'diemonic-custom-label-div';
         div.textContent = 'Ранний доступ';
+        div.title = 'Открыть список новостей';
         div.id = `diemonic-custom-label-${appId}`;
         div.dataset.steamAppId = appId;
+        div.addEventListener('click', () => {
+            window.open(`https://store.steampowered.com/news/app/${appId}`, '_blank');
+        });
 
         actualParent.appendChild(div);
 
