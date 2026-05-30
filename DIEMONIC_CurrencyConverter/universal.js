@@ -395,7 +395,7 @@
                     continue;
                 }
                 const text = node.textContent;
-                if (!text || text.length > 220) {
+                if (!text || text.length > 2000) {
                     continue;
                 }
                 if (!isTextNodeVisible(node)) {
@@ -461,15 +461,37 @@
 
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((added) => {
-                    if (added.nodeType === Node.ELEMENT_NODE) {
-                        scan(added);
-                    }
-                });
+                if (mutation.type === "childList") {
+                    mutation.addedNodes.forEach((added) => {
+                        if (added.nodeType === Node.ELEMENT_NODE) {
+                            scan(added);
+                            return;
+                        }
+                        if (added.nodeType === Node.TEXT_NODE && added.parentElement) {
+                            scan(added.parentElement);
+                        }
+                    });
+                    return;
+                }
+
+                if (mutation.type === "attributes" && mutation.target.nodeType === Node.ELEMENT_NODE) {
+                    scan(mutation.target);
+                    return;
+                }
+
+                if (mutation.type === "characterData" && mutation.target.parentElement) {
+                    scan(mutation.target.parentElement);
+                }
             });
         });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true,
+            attributeFilter: ["class", "style", "hidden", "aria-hidden"]
+        });
     }
 
     function toLocalDateString(timestamp) {
