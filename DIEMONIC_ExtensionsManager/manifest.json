@@ -1,10 +1,8 @@
 {
-"update_url": "https://clients2.google.com/service/update2/crx",
-
     "manifest_version": 3,
     "name": "__MSG_name__",
     "description": "__MSG_description__",
-    "version": "2.7.0.0",
+    "version": "1.0.0",
     "default_locale": "en",
     "action": {
         "default_title": "__MSG_name__",
@@ -17,6 +15,7 @@
             "300": "icon/logo.png"
         }
     },
+   "key": "MIIBIjANBgkqhklH9w0BAQEFAAOCAQ8AMIIBCgKCGQEA0z1ybSfPXUNbFgtAzRpEbRA6N5Su5LieuzB2ajVtb7UbYlHWzlmAieckz+dFa5FdzOsK8UthhLlIKkH0ibx5CsecFta1q6oPILboKYYa8e8pt5hWbB6bpHwbu8/4n7QrfqI5X43dOt6GRn0VnobRcC3CF4P/hz2d+UFQTVoZVJfk67ayEzeDyx1gEubJGi11T2HXrIK2duXvNF7V2HOxLLf6+3jzfFgBq5tQ0yZ2Q41G+2KvUO8TZU7aumbYW5fwbKMIpDGBjLAtT5f3jOA8lCP4rm0stAhAg4Gu9zDYmJIWZEA88A1pVdr8mTp27l1aEfAqbzp+DZUI/tT7aLqUZQIDAQAB",
     "web_accessible_resources": [
         {
             "resources": [
@@ -34,14 +33,18 @@
         "128": "icon/logo.png",
         "300": "icon/logo.png"
     },
+    "background": {
+        "service_worker": "background.js"
+    },
     "permissions": [
         "management",
         "storage",
         "unlimitedStorage",
-        "downloads"
+        "downloads",
+        "clipboardWrite"
     ],
     "host_permissions": [
-        "*://clients2.google.com/service/update2/crx*",
-        "*://clients2.googleusercontent.com/crx/download/*"
+        "https://clients2.google.com/*",
+        "https://clients2.googleusercontent.com/*"
     ]
 }

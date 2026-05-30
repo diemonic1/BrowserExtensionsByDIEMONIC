@@ -1,17 +1,112 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <link href="index.css" rel="stylesheet">
-    <script src="index.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D!EMONIC | Extension Manager</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
-</body>
+    <div class="app">
+        <main>
+            <ul id="extensionsList" class="extensions-list"></ul>
 
+            <header class="app-header">
+                <h1 id="titleText"></h1>
+                <div class="installed-counter" id="installedCounter"></div>
+            </header>
+        </main>
+    </div>
+
+    <div id="modalBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+        <section class="details-modal" role="dialog" aria-modal="true" aria-labelledby="detailName">
+            <header class="details-header">
+                <h2 id="detailName"></h2>
+                <button id="closeModalBtn" class="btn btn-ghost" type="button">x</button>
+            </header>
+            <div id="detailDescription" class="detail-description"></div>
+
+            <div class="details-content">
+                <p><span id="labelVersion"></span>: <strong id="detailVersion"></strong></p>
+                <p><span id="labelType"></span>: <strong id="detailType"></strong></p>
+                <div id="storeActions" class="actions-row hidden">
+                    <button id="openStoreBtn" class="btn" type="button"></button>
+                    <button id="copyStoreBtn" class="btn btn-ghost btn-icon" type="button">
+                        <img src="../assets/copy.svg" alt="" />
+                        <span id="copyStoreBtnText"></span>
+                    </button>
+                </div>
+
+                <div class="actions-row">
+                    <button id="downloadZipBtn" class="btn btn-icon" type="button">
+                        <img src="../assets/download.svg" alt="" />
+                        <span id="downloadZipBtnText"></span>
+                    </button>
+                    <button id="downloadCrxBtn" class="btn btn-icon" type="button">
+                        <img src="../assets/download.svg" alt="" />
+                        <span id="downloadCrxBtnText"></span>
+                    </button>
+                </div>
+
+                <div id="optionsActionRow" class="actions-row hidden">
+                    <button id="openOptionsBtn" class="btn btn-icon" type="button">
+                        <img src="../assets/settings.svg" alt="" />
+                        <span id="openOptionsBtnText"></span>
+                    </button>
+                </div>
+
+                <div class="actions-row danger-row">
+                    <button id="uninstallBtn" class="btn btn-danger" type="button"></button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="confirmBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+        <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <h3 id="confirmTitle"></h3>
+            <p id="confirmText"></p>
+            <div class="actions-row">
+                <button id="confirmNoBtn" class="btn btn-ghost" type="button"></button>
+                <button id="confirmYesBtn" class="btn btn-danger" type="button"></button>
+            </div>
+        </section>
+    </div>
+
+    <div id="notificationHost" class="notification-host"></div>
+
+    <template id="extensionRowTemplate">
+        <li class="extension-row" data-id="">
+            <div class="row-left">
+                <span class="ext-number"></span>
+                <img class="ext-icon" src="" alt="" />
+                <div class="ext-main">
+                    <div class="name-line">
+                        <span class="ext-name"></span>
+                    </div>
+                    <div class="ext-meta">
+                        <span class="ext-version"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row-actions">
+                <button class="settings-btn slot-placeholder" type="button" title="">
+                    <img src="../assets/settings.svg" alt="" />
+                </button>
+                <div class="state-slot">
+                    <button class="row-download-btn slot-placeholder" type="button" title="">
+                        <img src="../assets/download.svg" alt="" />
+                    </button>
+                    <span class="dev-badge slot-placeholder">Dev</span>
+                </div>
+                <label class="toggle" title="">
+                    <input class="toggle-input" type="checkbox" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </li>
+    </template>
+
+    <script src="popup.js"></script>
+</body>
 </html>

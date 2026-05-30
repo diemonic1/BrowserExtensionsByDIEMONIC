@@ -1,1 +1,97 @@
-{"name": {"message": "D!EMONIC | Extension Manager"}, "description": {"message": "Manage Extensions, Enable/disable, Custom Folder or Nickname, Star and Download as CRX or ZIP. MODDED BY D!EMONIC"}}
+{
+    "name": {
+        "message": "D!EMONIC | Extension Manager"
+    },
+    "description": {
+        "message": "Manage installed browser extensions, toggle, remove and download them."
+    },
+    "managerTitle": {
+        "message": "D!EMONIC | Extension Manager"
+    },
+    "installedCountHint": {
+        "message": "Number of installed extensions"
+    },
+    "labelVersion": {
+        "message": "Version"
+    },
+    "labelType": {
+        "message": "Type"
+    },
+    "typeDev": {
+        "message": "Development"
+    },
+    "typeRegular": {
+        "message": "Regular"
+    },
+    "noDescription": {
+        "message": "No description"
+    },
+    "devBadge": {
+        "message": "Dev"
+    },
+    "openSettings": {
+        "message": "Open settings"
+    },
+    "toggleExtension": {
+        "message": "Enable or disable extension"
+    },
+    "openInStore": {
+        "message": "Open in Chrome Web Store"
+    },
+    "copyStoreUrl": {
+        "message": "Copy store URL"
+    },
+    "downloadZip": {
+        "message": "Download ZIP"
+    },
+    "downloadZipArchiveTitle": {
+        "message": "Download extension as ZIP archive"
+    },
+    "downloadCrx": {
+        "message": "Download CRX"
+    },
+    "uninstall": {
+        "message": "Remove extension"
+    },
+    "confirmRemovalTitle": {
+        "message": "Confirm removal"
+    },
+    "confirmRemovalText": {
+        "message": "Delete extension: $NAME$?",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "cancel": {
+        "message": "Cancel"
+    },
+    "confirm": {
+        "message": "Delete"
+    },
+    "copied": {
+        "message": "Copied to clipboard"
+    },
+    "copyFailed": {
+        "message": "Failed to copy"
+    },
+    "downloadStarted": {
+        "message": "Download started"
+    },
+    "downloadFailed": {
+        "message": "Failed to download CRX"
+    },
+    "zipExtractionFailed": {
+        "message": "Failed to create ZIP"
+    },
+    "toggleFailed": {
+        "message": "Failed to change extension status"
+    },
+    "removed": {
+        "message": "Extension removed"
+    },
+    "removeFailed": {
+        "message": "Failed to remove extension"
+    }
+}

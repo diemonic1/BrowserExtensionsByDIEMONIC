@@ -1,1 +1,97 @@
-{"name": {"message": "D!EMONIC | Extension Manager"}, "description": {"message": "Управляйте раксширениями браузера, или скачивайте их как CRX or ZIP. Модификация от D!EMONIC"}}
+{
+    "name": {
+        "message": "D!EMONIC | Extension Manager"
+    },
+    "description": {
+        "message": "Управление установленными расширениями: включение, удаление и скачивание."
+    },
+    "managerTitle": {
+        "message": "D!EMONIC | Extension Manager"
+    },
+    "installedCountHint": {
+        "message": "Количество установленных расширений"
+    },
+    "labelVersion": {
+        "message": "Версия"
+    },
+    "labelType": {
+        "message": "Тип"
+    },
+    "typeDev": {
+        "message": "Dev"
+    },
+    "typeRegular": {
+        "message": "Обычное"
+    },
+    "noDescription": {
+        "message": "Без описания"
+    },
+    "devBadge": {
+        "message": "Dev"
+    },
+    "openSettings": {
+        "message": "Открыть настройки"
+    },
+    "toggleExtension": {
+        "message": "Включить или выключить расширение"
+    },
+    "openInStore": {
+        "message": "Открыть в Chrome Web Store"
+    },
+    "copyStoreUrl": {
+        "message": "Копировать ссылку"
+    },
+    "downloadZip": {
+        "message": "Скачать ZIP"
+    },
+    "downloadZipArchiveTitle": {
+        "message": "Скачать расширение как ZIP архив"
+    },
+    "downloadCrx": {
+        "message": "Скачать CRX"
+    },
+    "uninstall": {
+        "message": "Удалить расширение"
+    },
+    "confirmRemovalTitle": {
+        "message": "Подтверждение удаления"
+    },
+    "confirmRemovalText": {
+        "message": "Удалить расширение: $NAME$?",
+        "placeholders": {
+            "name": {
+                "content": "$1"
+            }
+        }
+    },
+    "cancel": {
+        "message": "Отмена"
+    },
+    "confirm": {
+        "message": "Удалить"
+    },
+    "copied": {
+        "message": "Скопировано в буфер"
+    },
+    "copyFailed": {
+        "message": "Не удалось скопировать"
+    },
+    "downloadStarted": {
+        "message": "Скачивание началось"
+    },
+    "downloadFailed": {
+        "message": "Не удалось скачать CRX"
+    },
+    "zipExtractionFailed": {
+        "message": "Не удалось создать ZIP"
+    },
+    "toggleFailed": {
+        "message": "Не удалось изменить статус расширения"
+    },
+    "removed": {
+        "message": "Расширение удалено"
+    },
+    "removeFailed": {
+        "message": "Не удалось удалить расширение"
+    }
+}
