@@ -1,0 +1,32 @@
+{
+   "content_scripts": [ {
+      "all_frames": true,
+      "js": [ "content.js" ],
+      "css" : ["mStyles.css"],
+      "matches": [ "https://spb.hh.ru/vacancy/*", "https://*.hh.ru/vacancy/*", "https://hh.ru/vacancy/*" ]
+   } ],
+   "description": "Генерация сопроводительного письма на HH.ru / Резюме задается через настройки расширения",
+   "web_accessible_resources":[
+      {
+         "resources": [ "catPilot.ico" ],
+         "matches": [ "<all_urls>" ]
+      }
+   ],
+   "host_permissions": [ "https://www.youtube.com/*" ],
+   "permissions": [ "storage" ],
+   "options_ui": {
+      "page": "options.html",
+      "open_in_tab": true
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCIQ8AMIIBCgKCAQEA0z1yuSfPXUNbOMpAzRpEbRA6N5Su5LneuzB2ajVtb7UbYlHWzlmAieckr+dFa5FdzOsK8UthhLlIKkH0ibx3CsecFta1q6oPILboKYYa8e8pt5hWbB6bpHwbu8/4n7QrfqI5X43dOt6GRn0VnobRcC3CF4P/hz2d+UFQTVoZVJfk67ayEzeDyx1gEubJGi11T2HXrIK2duXvNF7V2HOxLLf6+3jzfFgBq5tQ0yZ2Q41G+2KvUO8TZU7aumbYW5fwbKMIpDGBjLAtT5f3jOA8lCP4rm0stAhAg4Gu9zDYmJIWZEA88A1pVdr8mTp27l1aEfAqbzp+DZUI/tT7aLqUZQIDAQAB",
+   "manifest_version": 3,
+   "name": "D!EMONIC | HHLetterGenerator",
+   "version": "1.0.0",
+"icons": {
+   "16": "icon.png",
+   "32": "icon.png",
+   "48": "icon.png",  
+   "64": "icon.png",
+   "128": "icon.png"
+ }
+}

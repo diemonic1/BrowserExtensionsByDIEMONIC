@@ -1,0 +1,48 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: #1f1f1f;
+  color: #ececec;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+#resumeInput {
+  width: 100%;
+  min-height: 70vh;
+  resize: vertical;
+  border: 1px solid #4d4d4d;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #efefef;
+  background: #2a2a2a;
+}
+
+#resumeInput:focus {
+  outline: none;
+  border-color: #7f7f7f;
+}
+
+.save-state {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #bcbcbc;
+  min-height: 20px;
+}

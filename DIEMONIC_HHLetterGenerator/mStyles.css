@@ -1,0 +1,38 @@
+.ytDlpWebExtensionContainer {
+    height: 36px; width: 88px;
+}
+
+.ytDlpWebExtensionContainerWithMargin {
+    height: 36px; width: 88px; margin: 13px;
+}
+
+.ytDlpWebExtensionBlock {
+    padding: 5px 6px;
+    border-radius: 20px;
+    background-color: rgba(255,255,255,0.1);
+    display: flex;
+    align-content: center;
+    justify-content: space-evenly;
+}
+
+.ytDlpWebExtensionBlock:hover {
+    padding: 5px 6px;
+    border-radius: 20px;
+    background-color: rgba(255,255,255,0.2);
+    display: flex;
+    align-content: center;
+    justify-content: space-evenly;
+}
+
+.ytDlpWebExtensionIcon1 {
+    width: 27px;
+    height: 27px;
+}
+
+.ytDlpWebExtensionIcon2 {
+    width: 27px;
+    height: 27px;
+    position: relative; 
+    left: 0px; 
+    top: -1px;
+}
