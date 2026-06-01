@@ -246,9 +246,9 @@ async function addTestDivForUniqueAppLinks() {
 
         actualParent.appendChild(div);
 
-        const grandParent = actualParent.parentElement.parentElement.parentElement;
+        const grandParent = actualParent.parentElement.parentElement;
         if (grandParent) {
-            grandParent.appendChild(actualParent.parentElement.parentElement);
+            grandParent.appendChild(actualParent.parentElement);
             dLog(`Moved element down: appId ${appId}`);
         }
 
