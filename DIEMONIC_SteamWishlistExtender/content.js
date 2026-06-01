@@ -14,6 +14,13 @@ function hasSpawnedDiv(appId) {
     );
 }
 
+function dLog(msg) {
+    console.log(
+        "%c🚫[D!EMONIC Steam Wishlist Extender] " + msg,
+        "background: #464646b9; color: #ff459cff",
+    );
+}
+
 const PROGRESS_ROOT_ID = 'diemonic-progress-root';
 const PROGRESS_BAR_ID = 'diemonic-progress-bar';
 const PROGRESS_TEXT_ID = 'diemonic-progress-text';
@@ -239,10 +246,10 @@ async function addTestDivForUniqueAppLinks() {
 
         actualParent.appendChild(div);
 
-        const grandParent = actualParent.parentElement.parentElement;
+        const grandParent = actualParent.parentElement.parentElement.parentElement;
         if (grandParent) {
-            grandParent.appendChild(actualParent.parentElement);
-            console.log("ghjg");
+            grandParent.appendChild(actualParent.parentElement.parentElement);
+            dLog(`Moved element down: appId ${appId}`);
         }
 
         completedTasks += 1;
