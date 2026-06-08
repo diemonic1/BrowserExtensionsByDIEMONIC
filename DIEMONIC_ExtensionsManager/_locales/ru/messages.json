@@ -8,6 +8,9 @@
     "managerTitle": {
         "message": "D!EMONIC | Extension Manager"
     },
+    "openBrowserExtensionsPage": {
+        "message": "Расширения браузера"
+    },
     "installedCountHint": {
         "message": "Количество установленных расширений"
     },

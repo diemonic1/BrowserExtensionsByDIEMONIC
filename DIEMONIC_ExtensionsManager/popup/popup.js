@@ -2,16 +2,19 @@
     //#region Constants
     const SORT_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
     const CLIENT_VERSION = "133.0.0.0";
+    const BROWSER_EXTENSIONS_PAGE_URL = "chrome://extensions/";
     //#endregion
 
     //#region Elements
     const titleTextEl = document.getElementById("titleText");
+    const titleLinkEl = document.getElementById("titleLink");
     const installedCounterEl = document.getElementById("installedCounter");
     const extensionsListEl = document.getElementById("extensionsList");
     const rowTemplateEl = document.getElementById("extensionRowTemplate");
 
     const modalBackdropEl = document.getElementById("modalBackdrop");
     const closeModalBtnEl = document.getElementById("closeModalBtn");
+    const detailIconEl = document.getElementById("detailIcon");
     const detailNameEl = document.getElementById("detailName");
     const detailDescriptionEl = document.getElementById("detailDescription");
     const detailVersionEl = document.getElementById("detailVersion");
@@ -53,8 +56,11 @@
     const msg = (key, substitutions) => chrome.i18n.getMessage(key, substitutions) || key;
 
     function applyStaticTexts() {
-        const title = msg("managerTitle");
-        titleTextEl.textContent = title;
+        titleTextEl.textContent = msg("managerTitle");
+        titleLinkEl.textContent = msg("openBrowserExtensionsPage") + " ⬈";
+        titleLinkEl.title = msg("openBrowserExtensionsPage");
+        titleLinkEl.setAttribute("aria-label", msg("openBrowserExtensionsPage"));
+        titleLinkEl.href = BROWSER_EXTENSIONS_PAGE_URL;
 
         labelVersionEl.textContent = msg("labelVersion");
         labelTypeEl.textContent = msg("labelType");
@@ -69,6 +75,10 @@
         confirmTitleEl.textContent = msg("confirmRemovalTitle");
         confirmNoBtnEl.textContent = msg("cancel");
         confirmYesBtnEl.textContent = msg("confirm");
+    }
+
+    function openUrlInNewTab(url) {
+        chrome.tabs.create({ url });
     }
     //#endregion
 
@@ -268,7 +278,7 @@
 
     //#region Rendering
     function updateCounter() {
-        installedCounterEl.textContent = `${msg("installedCountHint")} ${allExtensions.length}`;
+        installedCounterEl.textContent = `${msg("installedCountHint")}: ${allExtensions.length}`;
     }
 
     function renderList() {
@@ -373,6 +383,8 @@
         }
 
         currentDetailsExtension = extension;
+        detailIconEl.src = pickIconUrl(extension.icons);
+        detailIconEl.alt = extension.name;
         detailNameEl.textContent = extension.name;
         detailDescriptionEl.textContent = (extension.description || "").trim() || msg("noDescription");
         detailVersionEl.textContent = extension.version;
@@ -386,7 +398,7 @@
         } else {
             storeActionsEl.classList.remove("hidden");
             downloadActionsRowEl.classList.remove("hidden");
-            openStoreBtnEl.onclick = () => chrome.tabs.create({ url: storeUrl });
+            openStoreBtnEl.onclick = () => openUrlInNewTab(storeUrl);
             copyStoreBtnEl.onclick = async () => {
                 try {
                     await navigator.clipboard.writeText(storeUrl);
@@ -399,7 +411,7 @@
 
         if (extension.optionsUrl) {
             optionsActionRowEl.classList.remove("hidden");
-            openOptionsBtnEl.onclick = () => chrome.tabs.create({ url: extension.optionsUrl });
+            openOptionsBtnEl.onclick = () => openUrlInNewTab(extension.optionsUrl);
         } else {
             optionsActionRowEl.classList.add("hidden");
             openOptionsBtnEl.onclick = null;
@@ -502,6 +514,11 @@
         }
 
         await uninstallExtension(pendingUninstallExtension.id);
+    });
+
+    titleLinkEl.addEventListener("click", event => {
+        event.preventDefault();
+        openUrlInNewTab(BROWSER_EXTENSIONS_PAGE_URL);
     });
 
     chrome.management.onEnabled.addListener(loadExtensions);
