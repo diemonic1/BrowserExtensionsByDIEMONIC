@@ -6,13 +6,22 @@ const SUPPORTED_URL_PREFIXES = [
 
 const TOOLTIP_CURRENCY_MAP = {
     "A$": "AUD", "AZN": "AZN", "BHD": "BHD", "R$": "BRL", "C$": "CAD",
-    "CHF": "CHF", "\u5143": "CNY", "K\u010d": "CZK", "kr": "DKK", "\u20ac": "EUR",
-    "\u00a3": "GBP", "GEL": "GEL", "HK$": "HKD", "Ft": "HUF", "\u20b9": "INR",
-    "\u00a5": "JPY", "\u20b8": "KZT", "\u20a9": "KRW", "NZ$": "NZD", "z\u0142": "PLN",
-    "QAR": "QAR", "RON": "RON", "SAR": "SAR", "S$": "SGD", "SEK": "SEK",
-    "\u0e3f": "THB", "TJS": "TJS", "TMT": "TMT", "\u20ba": "TRY", "\u20b4": "UAH",
-    "$": "USD", "\u20ab": "VND", "ZAR": "ZAR"
+    "BRL": "BRL", "CAD": "CAD", "CHF": "CHF", "CNY": "CNY", "\u5143": "CNY",
+    "CZK": "CZK", "K\u010d": "CZK", "DKK": "DKK", "kr": "DKK", "EUR": "EUR", "\u20ac": "EUR",
+    "GBP": "GBP", "\u00a3": "GBP", "GEL": "GEL", "HK$": "HKD", "HKD": "HKD", "HUF": "HUF", "Ft": "HUF",
+    "INR": "INR", "\u20b9": "INR", "JPY": "JPY", "\u00a5": "JPY", "KZT": "KZT", "\u20b8": "KZT",
+    "KRW": "KRW", "\u20a9": "KRW", "NZ$": "NZD", "NZD": "NZD", "PLN": "PLN", "z\u0142": "PLN",
+    "QAR": "QAR", "RON": "RON", "SAR": "SAR", "S$": "SGD", "SGD": "SGD", "SEK": "SEK",
+    "THB": "THB", "\u0e3f": "THB", "TJS": "TJS", "TMT": "TMT", "TRY": "TRY", "\u20ba": "TRY",
+    "UAH": "UAH", "\u20b4": "UAH", "USD": "USD", "\u0024": "USD", "$": "USD", "VND": "VND", "\u20ab": "VND",
+    "ZAR": "ZAR", "RUB": "RUB", "RUR": "RUB", "\u20bd": "RUB", "\u0440\u0443\u0431": "RUB", "\u0440\u0443\u0431.": "RUB"
 };
+
+const TOOLTIP_CURRENCY_TOKENS = Object.keys(TOOLTIP_CURRENCY_MAP).sort((a, b) => b.length - a.length);
+
+const TOOLTIP_REFRESH_INTERVAL_MS = 16;
+const TOOLTIP_CURSOR_OFFSET_X = -40;
+const TOOLTIP_CURSOR_OFFSET_Y = -120;
 
 (async () => {
     const isSupportedPage = SUPPORTED_URL_PREFIXES.some((prefix) => location.href.startsWith(prefix));
@@ -72,7 +81,9 @@ const TOOLTIP_CURRENCY_MAP = {
         unavailable: false,
         dragging: false,
         dragOffsetX: 0,
-        dragOffsetY: 0
+        dragOffsetY: 0,
+        cursorClientX: null,
+        cursorClientY: null
     };
 
     const ui = {
@@ -311,24 +322,32 @@ const TOOLTIP_CURRENCY_MAP = {
     };
 
     const parseTooltipPrice = (text) => {
-        const match = String(text || "").trim().match(/^([^\d]*?)([\d\s\u00a0,.]+)([^\d]*)$/);
-        if (!match) {
-            return null;
-        }
-        const prefix = match[1].trim();
-        const suffix = match[3].trim();
-        const symbol = prefix || suffix;
-        const code = TOOLTIP_CURRENCY_MAP[symbol] || null;
-        if (!code) {
+        const normalized = String(text || "").trim().replace(/\u00a0/g, " ");
+        if (!normalized || !/\d/.test(normalized)) {
             return null;
         }
 
-        const numStr = match[2].replace(/[\s\u00a0]/g, "").replace(",", ".");
-        const amount = Number(numStr);
-        if (!Number.isFinite(amount) || amount <= 0) {
-            return null;
+        for (const token of TOOLTIP_CURRENCY_TOKENS) {
+            const code = TOOLTIP_CURRENCY_MAP[token];
+            const escapedToken = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const prefixMatch = normalized.match(new RegExp(`^${escapedToken}\\s*([\\d\\s.,]+)$`, "i"));
+            if (prefixMatch) {
+                const amount = Number(prefixMatch[1].replace(/[\s]/g, "").replace(",", "."));
+                if (Number.isFinite(amount) && amount > 0) {
+                    return { amount, code };
+                }
+            }
+
+            const suffixMatch = normalized.match(new RegExp(`^([\\d\\s.,]+)\\s*${escapedToken}$`, "i"));
+            if (suffixMatch) {
+                const amount = Number(suffixMatch[1].replace(/[\s]/g, "").replace(",", "."));
+                if (Number.isFinite(amount) && amount > 0) {
+                    return { amount, code };
+                }
+            }
         }
-        return { amount, code };
+
+        return null;
     };
 
     const convertTooltipPrice = (text) => {
@@ -339,102 +358,222 @@ const TOOLTIP_CURRENCY_MAP = {
         return formatGroupedNumber(roundToTwo(parsed.amount * state.ratesMap[parsed.code]));
     };
 
-    const tryApplyPriceConversion = (nodes, textMatcher, additionalClass) => {
-        for (let i = 0; i < nodes.length; i += 1) {
-            const node = nodes[i];
-            if (node.nodeType !== Node.TEXT_NODE || !textMatcher(node.textContent)) {
-                continue;
-            }
-            const bEl = nodes[i + 1];
-            if (!bEl || bEl.tagName !== "B") {
-                continue;
-            }
-
-            const rubles = convertTooltipPrice(bEl.textContent);
-            if (rubles !== null) {
-                const injected = document.createElement("span");
-                injected.className = "cc-tooltip-rub";
-                if (additionalClass) {
-                    injected.classList.add(additionalClass);
-                }
-                injected.innerHTML = `<b>${formatRublesHtml(rubles)}</b>`;
-                bEl.after(injected);
-            }
-            return true;
-        }
-        return false;
+    const clearTooltipOverlays = () => {
+        document.querySelectorAll(".cc-tooltip-rub").forEach((el) => el.remove());
     };
 
-    const processTooltipSpan = (span) => {
-        span.querySelectorAll(".cc-tooltip-rub").forEach((el) => el.remove());
-        const nodes = Array.from(span.childNodes);
-        if (tryApplyPriceConversion(nodes, (text) => String(text).includes("Discounted price:"), "cc-tooltip-rub-bottom")) {
+    const isTooltipHidden = (tooltip) => {
+        if (!tooltip || tooltip.nodeType !== Node.ELEMENT_NODE) {
+            return true;
+        }
+
+        const visibilityAttr = tooltip.getAttribute("visibility");
+        if (visibilityAttr === "hidden" || visibilityAttr === "collapse") {
+            return true;
+        }
+
+        const style = window.getComputedStyle(tooltip);
+        return style.visibility === "hidden" || style.visibility === "collapse" || style.display === "none" || style.opacity === "0";
+    };
+
+    const splitTooltipLines = (contentRoot) => {
+        const lines = [];
+        let currentLine = [];
+
+        Array.from(contentRoot.childNodes).forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "BR") {
+                if (currentLine.length) {
+                    lines.push(currentLine);
+                    currentLine = [];
+                }
+                return;
+            }
+            currentLine.push(node);
+        });
+
+        if (currentLine.length) {
+            lines.push(currentLine);
+        }
+
+        return lines;
+    };
+
+    const getTooltipLinePriceElement = (lineNodes) => {
+        for (const node of lineNodes) {
+            if (node.nodeType !== Node.ELEMENT_NODE) {
+                continue;
+            }
+            if (node.tagName === "B") {
+                return node;
+            }
+            const nestedBold = node.querySelector?.("b");
+            if (nestedBold) {
+                return nestedBold;
+            }
+        }
+        return null;
+    };
+
+    const tryApplyPriceConversion = (lineNodes, textMatcher, additionalClass) => {
+        const lineText = lineNodes.map((node) => node.textContent || "").join("").trim();
+        if (!textMatcher(lineText)) {
+            return false;
+        }
+
+        const priceElement = getTooltipLinePriceElement(lineNodes);
+        if (!priceElement) {
+            return false;
+        }
+
+        const rubles = convertTooltipPrice(priceElement.textContent);
+        if (rubles === null) {
+            return true;
+        }
+
+        const injected = document.createElement("span");
+        injected.className = "cc-tooltip-rub";
+        if (additionalClass) {
+            injected.classList.add(additionalClass);
+        }
+        injected.innerHTML = formatRublesHtml(rubles);
+
+        const fallbackRect = priceElement.getBoundingClientRect();
+        const cursorX = state.cursorClientX ?? fallbackRect.left;
+        const cursorY = state.cursorClientY ?? fallbackRect.top;
+
+        injected.style.left = `${Math.round(cursorX + TOOLTIP_CURSOR_OFFSET_X)}px`;
+        if (additionalClass) {
+            injected.style.top = `${Math.round(cursorY - 4 + TOOLTIP_CURSOR_OFFSET_Y)}px`;
+        } else {
+            injected.style.top = `${Math.round(cursorY + 4 + TOOLTIP_CURSOR_OFFSET_Y)}px`;
+        }
+
+        document.body.appendChild(injected);
+        return true;
+    };
+
+    const processTooltipContent = (contentRoot, tooltip) => {
+        if (isTooltipHidden(tooltip)) {
+            clearTooltipOverlays();
             return;
         }
-        tryApplyPriceConversion(nodes, (text) => {
-            const t = String(text);
-            return t.includes("Price:") || t.includes("price:");
-        });
+
+        clearTooltipOverlays();
+        const lines = splitTooltipLines(contentRoot);
+        if (lines.some((lineNodes) => tryApplyPriceConversion(lineNodes, (text) => text.includes("Discounted price:"), "cc-tooltip-rub-bottom"))) {
+            return;
+        }
+        lines.some((lineNodes) => tryApplyPriceConversion(lineNodes, (text) => {
+            return text.includes("Initial price:") || text.includes("Price:") || text.includes("price:");
+        }));
     };
 
     const initTooltipObserver = () => {
-        const observeTooltipSpan = (tooltip) => {
-            const span = tooltip.querySelector("span");
-            if (!span) {
+        const observedRoots = new WeakSet();
+        const observedTooltips = new WeakSet();
+        const observedPanels = new WeakSet();
+
+        const getTooltipContentRoot = (tooltip) => {
+            if (!tooltip || tooltip.nodeType !== Node.ELEMENT_NODE) {
+                return null;
+            }
+
+            return tooltip.querySelector("foreignObject body > div")
+                || tooltip.querySelector("foreignObject div[data-z-index='1']")
+                || tooltip.querySelector("span");
+        };
+
+        const observeTooltipContent = (tooltip) => {
+            if (!tooltip || observedTooltips.has(tooltip)) {
                 return;
             }
 
-            processTooltipSpan(span);
+            const contentRoot = getTooltipContentRoot(tooltip);
+            if (!contentRoot) {
+                return;
+            }
+
+            observedTooltips.add(tooltip);
+            processTooltipContent(contentRoot, tooltip);
+
+            const tooltipObserver = new MutationObserver(() => {
+                processTooltipContent(contentRoot, tooltip);
+            });
+            tooltipObserver.observe(tooltip, { attributes: true, attributeFilter: ["visibility", "style", "class", "opacity", "transform"] });
+
+            if (observedRoots.has(contentRoot)) {
+                return;
+            }
+
+            observedRoots.add(contentRoot);
             const observer = new MutationObserver(() => {
                 observer.disconnect();
-                processTooltipSpan(span);
-                observer.observe(span, { childList: true, subtree: true, characterData: true });
+                processTooltipContent(contentRoot, tooltip);
+                observer.observe(contentRoot, { childList: true, subtree: true, characterData: true });
             });
-            observer.observe(span, { childList: true, subtree: true, characterData: true });
+            observer.observe(contentRoot, { childList: true, subtree: true, characterData: true });
         };
 
-        const attachToRoot = (root) => {
-            const existingTooltip = root.querySelector("div.highcharts-tooltip");
-            if (existingTooltip) {
-                setTimeout(() => observeTooltipSpan(existingTooltip), 20);
+        const processAllTooltips = () => {
+            document.querySelectorAll(".highcharts-tooltip").forEach((tooltip) => {
+                observeTooltipContent(tooltip);
+            });
+        };
+
+        let refreshTimeoutId = null;
+        const scheduleTooltipRefresh = () => {
+            if (refreshTimeoutId !== null) {
+                return;
+            }
+            refreshTimeoutId = window.setTimeout(() => {
+                refreshTimeoutId = null;
+                processAllTooltips();
+            }, TOOLTIP_REFRESH_INTERVAL_MS);
+        };
+
+        const observeTabPanel = (panel) => {
+            if (!panel || observedPanels.has(panel)) {
                 return;
             }
 
-            const rootObserver = new MutationObserver((mutations, obs) => {
-                for (const mutation of mutations) {
-                    for (const added of mutation.addedNodes) {
-                        if (added.nodeType !== Node.ELEMENT_NODE) {
-                            continue;
-                        }
-                        const found = (added.tagName === "DIV" && added.classList?.contains("highcharts-tooltip"))
-                            ? added
-                            : added.querySelector?.("div.highcharts-tooltip");
-                        if (found) {
-                            obs.disconnect();
-                            setTimeout(() => observeTooltipSpan(found), 20);
-                            return;
-                        }
-                    }
-                }
+            observedPanels.add(panel);
+            panel.addEventListener("pointermove", (event) => {
+                state.cursorClientX = event.clientX;
+                state.cursorClientY = event.clientY;
+                scheduleTooltipRefresh();
+            }, { passive: true });
+            const panelObserver = new MutationObserver(() => {
+                scheduleTooltipRefresh();
             });
-            rootObserver.observe(root, { childList: true, subtree: true });
+            panelObserver.observe(panel, { childList: true, subtree: true, characterData: true });
         };
 
-        document.querySelectorAll(".chart-container").forEach(attachToRoot);
-        const bodyObserver = new MutationObserver((mutations) => {
+        const attachTabPanelObservers = (root = document) => {
+            if (root.nodeType !== Node.ELEMENT_NODE && root !== document) {
+                return;
+            }
+
+            if (root instanceof Element && root.matches("[role='tabpanel']")) {
+                observeTabPanel(root);
+            }
+
+            root.querySelectorAll?.("[role='tabpanel']").forEach(observeTabPanel);
+        };
+
+        processAllTooltips();
+        attachTabPanelObservers();
+
+        const pageObserver = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
-                for (const added of mutation.addedNodes) {
-                    if (added.nodeType !== Node.ELEMENT_NODE) {
+                for (const addedNode of mutation.addedNodes) {
+                    if (addedNode.nodeType !== Node.ELEMENT_NODE) {
                         continue;
                     }
-                    if (added.classList?.contains("chart-container")) {
-                        attachToRoot(added);
-                    }
-                    added.querySelectorAll?.(".chart-container").forEach(attachToRoot);
+                    attachTabPanelObservers(addedNode);
                 }
             }
         });
-        bodyObserver.observe(document.body, { childList: true, subtree: true });
+        pageObserver.observe(document.body, { childList: true, subtree: true });
     };
 
     await createUI();

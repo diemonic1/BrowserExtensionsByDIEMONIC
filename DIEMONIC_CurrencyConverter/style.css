@@ -104,10 +104,11 @@
 }
 
 .cc-tooltip-rub {
-  position: absolute;
-  top: 14px;
-  left: -105px;
-  z-index: 100000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateY(4px);
+  z-index: 2147483647;
   display: block;
   padding: 2px 8px;
   background: #e8e8e8;
@@ -117,10 +118,15 @@
   font-weight: 600;
   line-height: 1.6;
   white-space: nowrap;
+  pointer-events: none;
+  width: fit-content;
+  height: fit-content;
 }
 
 .cc-tooltip-rub-bottom {
-  top: 30px !important;
+  top: auto;
+  bottom: 100%;
+  transform: translateY(-4px);
 }
 
 .cc-rub-fraction {
