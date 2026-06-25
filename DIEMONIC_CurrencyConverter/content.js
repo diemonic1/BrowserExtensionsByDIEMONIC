@@ -14,7 +14,11 @@ const TOOLTIP_CURRENCY_MAP = {
     "QAR": "QAR", "RON": "RON", "SAR": "SAR", "S$": "SGD", "SGD": "SGD", "SEK": "SEK",
     "THB": "THB", "\u0e3f": "THB", "TJS": "TJS", "TMT": "TMT", "TRY": "TRY", "\u20ba": "TRY",
     "UAH": "UAH", "\u20b4": "UAH", "USD": "USD", "\u0024": "USD", "$": "USD", "VND": "VND", "\u20ab": "VND",
-    "ZAR": "ZAR", "RUB": "RUB", "RUR": "RUB", "\u20bd": "RUB", "\u0440\u0443\u0431": "RUB", "\u0440\u0443\u0431.": "RUB"
+    "ZAR": "ZAR", "RUB": "RUB", "RUR": "RUB", "\u20bd": "RUB", "\u0440\u0443\u0431": "RUB", "\u0440\u0443\u0431.": "RUB",
+    "\u0434\u043e\u043b\u043b\u0430\u0440": "USD", "\u0434\u043e\u043b\u043b\u0430\u0440\u0430": "USD", "\u0434\u043e\u043b\u043b\u0430\u0440\u043e\u0432": "USD",
+    "\u0442\u0435\u043d\u0433\u0435": "KZT",
+    "долларов": "USD", "доллар": "USD",
+    "долларов": "USD", "доллара": "USD", "доллару": "USD", "долларом": "USD",
 };
 
 const TOOLTIP_CURRENCY_TOKENS = Object.keys(TOOLTIP_CURRENCY_MAP).sort((a, b) => b.length - a.length);

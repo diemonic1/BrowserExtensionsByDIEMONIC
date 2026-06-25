@@ -1,4 +1,5 @@
 (function () {
+    const COLOR_OF_UNDERLINE = "rgba(255, 0, 119, 0.19)";
     const TEST_RATES_ERROR_POPUP = false;
 
     const APP = {
@@ -7,6 +8,7 @@
         maxTtlMinutes: 600
     };
 
+    // тут можно вводить дополнмтельные обозначения приставок и суффиксов валют, которые будут распознаваться в тексте
     const TOKEN_TO_CODE = {
         "a$": "AUD",
         "aud": "AUD",
@@ -19,6 +21,9 @@
         "chf": "CHF",
         "cny": "CNY",
         "\u5143": "CNY",
+        "\u044e\u0430\u043d\u044c": "CNY",
+        "\u044e\u0430\u043d\u044f": "CNY",
+        "\u044e\u0430\u043d\u0435\u0439": "CNY",
         "k\u010d": "CZK",
         "czk": "CZK",
         "dkk": "DKK",
@@ -67,10 +72,36 @@
         "rur": "RUB",
         "\u20bd": "RUB",
         "\u0440\u0443\u0431": "RUB",
-        "\u0440\u0443\u0431.": "RUB"
+        "\u0440\u0443\u0431.": "RUB",
+        "доллар": "USD",
+        "долларов": "USD",
+        "доллара": "USD",
+        "доллару": "USD",
+        "долларом": "USD",
+        "долар": "USD",
+        "доларов": "USD",
+        "долара": "USD",
+        "долару": "USD",
+        "доларом": "USD",
+        "бакс": "USD",
+        "баксов": "USD",
+        "вечнозеленых": "USD",
+        "вечнозелёных": "USD",
+        "\u0434\u043e\u043b\u043b\u0430\u0440": "USD",
+        "\u0434\u043e\u043b\u043b\u0430\u0440\u0430": "USD",
+        "\u0434\u043e\u043b\u043b\u0430\u0440\u043e\u0432": "USD",
+        "\u0434\u043e\u043b\u043b\u0430\u0440\u0443": "USD",
+        "\u0434\u043e\u043b\u043b\u0430\u0440\u043e\u043c": "USD",
+        "\u0431\u0430\u043a\u0441": "USD",
+        "\u0431\u0430\u043a\u0441\u0430": "USD",
+        "\u0431\u0430\u043a\u0441\u043e\u0432": "USD",
+        "\u0431\u0430\u043a\u0438\u043d\u0441\u043a\u0438\u0445": "USD",
+        "тенге": "KZT", "\u0442\u0435\u043d\u0433\u0435": "KZT"
     };
 
     const TOKENS = Object.keys(TOKEN_TO_CODE).sort((a, b) => b.length - a.length);
+    const TOKEN_ALTERNATION = TOKENS.map(escapeRegExp).join("|");
+    const TOKEN_GROUP = `(?:${TOKEN_ALTERNATION})`;
 
     function sendMessage(message) {
         return new Promise((resolve) => {
@@ -173,7 +204,7 @@
     function extractPriceParts(text) {
         const compact = String(text || "").replace(/\u00a0/g, " ");
         const matches = [];
-        const pattern = /([A-Za-z$\u20ac\u00a3\u00a5\u20a9\u20bd\u20b4\u20b8\u20ba\u20ab\u20b9\u0e3f\u5143]{1,7}\s*[\d][\d\s.,]*|[\d][\d\s.,]*\s*[A-Za-z$\u20ac\u00a3\u00a5\u20a9\u20bd\u20b4\u20b8\u20ba\u20ab\u20b9\u0e3f\u5143]{1,7})/g;
+        const pattern = new RegExp(`(${TOKEN_GROUP}\\s*[\\d][\\d\\s\\u00a0.,]*|[\\d][\\d\\s\\u00a0.,]*\\s*${TOKEN_GROUP})`, "gi");
 
         let hit;
         while ((hit = pattern.exec(compact)) !== null) {
@@ -439,7 +470,7 @@
                     span.className = "dc-price-target";
                     span.textContent = target;
                     span.style.cursor = "help";
-                    span.style.textDecoration = "underline dotted rgba(123, 157, 239, 0.7)";
+                    span.style.textDecoration = `underline dotted ${COLOR_OF_UNDERLINE}`;
                     span.style.textUnderlineOffset = "2px";
                     span.tabIndex = -1;
                     bindSpan(span, parsed);
