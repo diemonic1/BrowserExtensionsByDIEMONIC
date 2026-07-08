@@ -1,0 +1,44 @@
+{
+    "manifest_version": 3,
+    "name": "__MSG_extName__",
+    "description": "__MSG_extDescription__",
+    "default_locale": "en",
+    "version": "1.0.0",
+    "permissions": [ "storage" ],
+    "host_permissions": [ "https://www.youtube.com/*" ],
+    "content_scripts": [ {
+        "all_frames": true,
+        "matches": [ "https://www.youtube.com/*" ],
+        "css": [ "styles/customButtons.css", "styles/viewProgress.css" ],
+        "js": [
+            "modules/logger.js",
+            "modules/customButtons.js",
+            "modules/mediaListener.js",
+            "modules/sidebarButtons.js",
+            "modules/viewProgress.js",
+            "main.js"
+        ]
+    } ],
+    "options_ui": {
+        "page": "options.html"
+    },
+    "icons": {
+        "16": "icon/16.png",
+        "32": "icon/32.png",
+        "48": "icon/48.png",
+        "64": "icon/64.png",
+        "128": "icon/128.png"
+    },
+    "web_accessible_resources": [ {
+        "resources": [
+            "assets/iconDownload.png",
+            "assets/CatPilot.ico",
+            "assets/iconPreview.png",
+            "assets/iconPreview2.png",
+            "assets/subs.png",
+            "assets/later.png",
+            "assets/playlists.png"
+        ],
+        "matches": [ "<all_urls>" ]
+    } ]
+}

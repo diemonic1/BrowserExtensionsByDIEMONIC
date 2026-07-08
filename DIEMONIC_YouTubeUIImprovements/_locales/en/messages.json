@@ -1,0 +1,53 @@
+{
+    "extName": { "message": "D!EMONIC | YouTube UI Improvements" },
+    "extDescription": { "message": "Combines custom download/preview buttons, media-key control, sidebar shortcuts and watch progress display for YouTube into one configurable extension" },
+    "optionsTitle": { "message": "D!EMONIC | YouTube UI Improvements — Settings" },
+
+    "modulesCardTitle": { "message": "Modules" },
+    "moduleCustomButtonsLabel": { "message": "Download and preview buttons" },
+    "moduleMediaListenerLabel": { "message": "Media key control" },
+    "moduleSidebarButtonsLabel": { "message": "Sidebar shortcut buttons" },
+    "moduleViewProgressLabel": { "message": "Watch progress display" },
+
+    "loggingCardTitle": { "message": "Logging" },
+    "enableLogsLabel": { "message": "Enable extension logs in the browser console" },
+
+    "downloadCardTitle": { "message": "Download button settings" },
+    "showDownloadButtonLabel": { "message": "Show video download button" },
+    "showPreviewButtonLabel": { "message": "Show video preview button" },
+    "protocolLabel": { "message": "Protocol/Command to open:" },
+    "protocolHint": { "message": "Used in the URL: protocol + video link" },
+
+    "downloadTooltip": {
+        "message": "Download video using: $URL$",
+        "placeholders": { "url": { "content": "$1" } }
+    },
+    "previewTooltip": { "message": "Open video preview in a new tab" },
+    "videoNotFoundLog": { "message": "Video not found" },
+    "openingDownloadLinkLog": {
+        "message": "ytDlpWebExtension: opening link $URL$",
+        "placeholders": { "url": { "content": "$1" } }
+    },
+    "downloadErrorLog": {
+        "message": "Something went wrong: $ERROR$",
+        "placeholders": { "error": { "content": "$1" } }
+    },
+    "thumbnailLog": {
+        "message": "YouTube thumbnail: $URL$",
+        "placeholders": { "url": { "content": "$1" } }
+    },
+    "fullscreenPercentLog": {
+        "message": "Video occupies $WIDTH$% of width and $HEIGHT$% of height of the screen",
+        "placeholders": { "width": { "content": "$1" }, "height": { "content": "$2" } }
+    },
+    "fullscreenKeyLog": { "message": "F14 → f (fullscreen)" },
+
+    "subscriptionsLabel": { "message": "Subscriptions" },
+    "watchLaterLabel": { "message": "Watch later" },
+    "playlistsLabel": { "message": "Playlists" },
+
+    "progressTooltip": {
+        "message": "$PERCENT$% watched, $TIME$ remaining",
+        "placeholders": { "percent": { "content": "$1" }, "time": { "content": "$2" } }
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "extName": { "message": "D!EMONIC | YouTube UI Improvements" },
+    "extDescription": { "message": "Объединяет кастомные кнопки скачивания/превью, управление медиаклавишами, кнопки бокового меню и индикатор прогресса просмотра YouTube в одном настраиваемом расширении" },
+    "optionsTitle": { "message": "D!EMONIC | YouTube UI Improvements — Настройки" },
+
+    "modulesCardTitle": { "message": "Модули" },
+    "moduleCustomButtonsLabel": { "message": "Кнопки загрузки и превью видео" },
+    "moduleMediaListenerLabel": { "message": "Управление медиаклавишами" },
+    "moduleSidebarButtonsLabel": { "message": "Кнопки в боковом меню" },
+    "moduleViewProgressLabel": { "message": "Прогресс просмотра видео" },
+
+    "loggingCardTitle": { "message": "Логирование" },
+    "enableLogsLabel": { "message": "Включить логи расширения в консоль браузера" },
+
+    "downloadCardTitle": { "message": "Настройки кнопки загрузки" },
+    "showDownloadButtonLabel": { "message": "Показывать кнопку загрузки видео" },
+    "showPreviewButtonLabel": { "message": "Показывать кнопку показа превью видео" },
+    "protocolLabel": { "message": "Протокол/Команда для открытия:" },
+    "protocolHint": { "message": "Используется в URL: протокол + ссылка на видео" },
+
+    "downloadTooltip": {
+        "message": "Скачать видео с помощью: $URL$",
+        "placeholders": { "url": { "content": "$1" } }
+    },
+    "previewTooltip": { "message": "Открыть превью видео в новой вкладке" },
+    "videoNotFoundLog": { "message": "Видео не найдено" },
+    "openingDownloadLinkLog": {
+        "message": "ytDlpWebExtension: открываем ссылку $URL$",
+        "placeholders": { "url": { "content": "$1" } }
+    },
+    "downloadErrorLog": {
+        "message": "Что-то пошло не так: $ERROR$",
+        "placeholders": { "error": { "content": "$1" } }
+    },
+    "thumbnailLog": {
+        "message": "Миниатюра YouTube: $URL$",
+        "placeholders": { "url": { "content": "$1" } }
+    },
+    "fullscreenPercentLog": {
+        "message": "Видео занимает $WIDTH$% по ширине и $HEIGHT$% по высоте экрана",
+        "placeholders": { "width": { "content": "$1" }, "height": { "content": "$2" } }
+    },
+    "fullscreenKeyLog": { "message": "F14 → f (полноэкранный режим)" },
+
+    "subscriptionsLabel": { "message": "Подписки" },
+    "watchLaterLabel": { "message": "Смотреть позже" },
+    "playlistsLabel": { "message": "Плейлисты" },
+
+    "progressTooltip": {
+        "message": "$PERCENT$% просмотрено, $TIME$ осталось",
+        "placeholders": { "percent": { "content": "$1" }, "time": { "content": "$2" } }
+    }
+}
