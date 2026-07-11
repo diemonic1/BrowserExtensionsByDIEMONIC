@@ -364,6 +364,18 @@ const throttledScrollSeries = throttle(() => requestAnimationFrame(runTryDeleteA
   document.addEventListener(eventName, throttledScrollSeries, { passive: true, capture: true });
 });
 
+// Content script runs at document_start, before the page has built its DOM - waiting for a
+// user interaction (the listeners above) or the page finishing loading is what made ad
+// removal feel slow. Instead, react to the page's own DOM construction as it streams in:
+// document.documentElement always exists at document_start, so the observer can attach
+// immediately and catch ad elements the moment the page inserts them, well before "load".
+// Routed through the same throttled + overlap-guarded runTryDeleteAdsSeries() as everything
+// else, so this doesn't add a new, less-safe removal path.
+const earlyDomObserver = new MutationObserver(() => {
+  throttledSeries();
+});
+earlyDomObserver.observe(document.documentElement, { childList: true, subtree: true });
+
 loadSettings(() => {
   if (window.DIEMONIC_ADS_BLOCK_enabled) {
     CheckConfigs();
