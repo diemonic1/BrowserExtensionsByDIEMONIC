@@ -8,6 +8,7 @@
         "[id*='adfox']",
         "[id*='yandex__underheader']",
         "[id*='tztugvdesktop']",
+        "[class*='Organic_withAdvLabel']",
         "[class*='AppForecastMoney']", 
         "[class*='topBlockWithMoney']", 
         "[class*='AppMoneySidebar']", 
@@ -33,16 +34,22 @@
         "[data-test-id*='afishaProfit.wrapper']",
         "[data-zone-name*='headerPromoStreamer']",
         "[data-apiary-widget-name*='monetize/HeroBannersCarousel']",
-        "[data-apiary-widget-name*='monetize/HeroCarousel']"
+        "[data-apiary-widget-name*='monetize/HeroCarousel']",
+        "[data-name*='adWrapper']"
     ],
-    "elementsToCheck": [
-        "[class*='serp-item_card']",
-        "[class*='JustifierColumnLayout-Item']",
+    "elementsToCheckDelete": [
+        "[class*='Organic_withaq']",
+        "[class*='RsyaOrganic']",
         "[data-testid*='page-layout_right-column_container']",
         "[data-test-id*='page-layout_right-column_container']",
         "[id*='heroBanner']",
         "[id*='cardRecommendationRoll']",
-        "[id*='marketfrontRecomLayout42/recomLayoutItem']"
+        "[id*='marketfrontRecomLayout42/recomLayoutItem']",
+        "[id*='search-list']"
+    ],
+    "elementsToCheckHide": [
+        "[class*='serp-item_card']",
+        "[class*='JustifierColumnLayout-Item']"
     ],
     "banWords": [
         "practicum.yandex.ru", 
