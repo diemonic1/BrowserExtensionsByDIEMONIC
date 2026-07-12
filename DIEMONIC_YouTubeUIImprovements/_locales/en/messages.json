@@ -1,6 +1,6 @@
 {
     "extName": { "message": "D!EMONIC | YouTube UI Improvements" },
-    "extDescription": { "message": "Combines custom download/preview buttons, media-key control, sidebar shortcuts and watch progress display for YouTube into one configurable extension" },
+    "extDescription": { "message": "Combines custom download/preview buttons, media-key control, sidebar shortcuts and watch progress for YouTube in one extension" },
     "optionsTitle": { "message": "D!EMONIC | YouTube UI Improvements — Settings" },
 
     "modulesCardTitle": { "message": "Modules" },

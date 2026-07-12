@@ -39,6 +39,6 @@
             "assets/later.png",
             "assets/playlists.png"
         ],
-        "matches": [ "<all_urls>" ]
+        "matches": [ "https://www.youtube.com/*" ]
     } ]
 }

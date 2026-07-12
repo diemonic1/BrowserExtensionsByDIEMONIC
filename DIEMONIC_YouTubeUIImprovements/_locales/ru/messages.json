@@ -1,6 +1,6 @@
 {
     "extName": { "message": "D!EMONIC | YouTube UI Improvements" },
-    "extDescription": { "message": "Объединяет кастомные кнопки скачивания/превью, управление медиаклавишами, кнопки бокового меню и индикатор прогресса просмотра YouTube в одном настраиваемом расширении" },
+    "extDescription": { "message": "Объединяет кнопки скачивания/превью, медиаклавиши, кнопки бокового меню и прогресс просмотра YouTube в одном расширении" },
     "optionsTitle": { "message": "D!EMONIC | YouTube UI Improvements — Настройки" },
 
     "modulesCardTitle": { "message": "Модули" },

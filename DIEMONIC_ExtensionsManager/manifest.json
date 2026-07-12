@@ -35,10 +35,7 @@
     },
     "permissions": [
         "management",
-        "storage",
-        "unlimitedStorage",
-        "downloads",
-        "clipboardWrite"
+        "downloads"
     ],
     "host_permissions": [
         "https://clients2.google.com/*",
