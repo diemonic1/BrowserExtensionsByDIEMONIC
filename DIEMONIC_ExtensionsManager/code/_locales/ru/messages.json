@@ -96,5 +96,14 @@
     },
     "removeFailed": {
         "message": "Не удалось удалить расширение"
+    },
+    "optionsTitle": {
+        "message": "D!EMONIC | Extension Manager — Настройки"
+    },
+    "iconSectionTitle": {
+        "message": "Иконка"
+    },
+    "iconOptionLabel": {
+        "message": "Вариант иконки"
     }
 }

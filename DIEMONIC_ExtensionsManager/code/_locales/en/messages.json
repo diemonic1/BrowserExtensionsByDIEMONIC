@@ -96,5 +96,14 @@
     },
     "removeFailed": {
         "message": "Failed to remove extension"
+    },
+    "optionsTitle": {
+        "message": "D!EMONIC | Extension Manager — Settings"
+    },
+    "iconSectionTitle": {
+        "message": "Icon"
+    },
+    "iconOptionLabel": {
+        "message": "Icon option"
     }
 }

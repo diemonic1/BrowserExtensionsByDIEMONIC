@@ -1,4 +1,35 @@
 (() => {
+    //#region Icon version
+    const ICON_VERSIONS = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10", "v11"];
+    const ICON_SIZES = [16, 32, 48, 64, 128, 256, 512];
+    const DEFAULT_ICON_SETTINGS = { iconVersion: "v1" };
+
+    function buildIconPaths(version) {
+        const path = {};
+        ICON_SIZES.forEach((size) => {
+            path[size] = `icon/${version}/${size}.png`;
+        });
+        return path;
+    }
+
+    function applyIconVersion(version) {
+        const resolvedVersion = ICON_VERSIONS.includes(version) ? version : DEFAULT_ICON_SETTINGS.iconVersion;
+        chrome.action.setIcon({ path: buildIconPaths(resolvedVersion) });
+    }
+
+    chrome.storage.sync.get(DEFAULT_ICON_SETTINGS, (settings) => {
+        applyIconVersion(settings.iconVersion);
+    });
+
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName !== "sync" || !changes.iconVersion) {
+            return;
+        }
+
+        applyIconVersion(changes.iconVersion.newValue);
+    });
+    //#endregion
+
     //#region Helpers
     function getCrxDownloadUrl(extensionId, clientVersion) {
         const query = encodeURIComponent(`id=${extensionId}&installsource=ondemand&uc`);

@@ -50,6 +50,11 @@
     let allExtensions = [];
     let currentDetailsExtension = null;
     let pendingUninstallExtension = null;
+    // chrome.management reports this extension's own icon from the static manifest, which
+    // never reflects the icon version chosen in Settings (that's only applied at runtime via
+    // chrome.action.setIcon). Track the live selection separately to render our own row/modal
+    // with the actually-selected icon instead.
+    let selfIconVersion = "v1";
     //#endregion
 
     //#region Localization
@@ -301,7 +306,7 @@
             const rowActionsEl = node.querySelector(".row-actions");
 
             numberEl.textContent = `${index + 1}.`;
-            iconEl.src = pickIconUrl(extension.icons);
+            iconEl.src = pickIconUrl(extension.icons, extension.id);
             iconEl.alt = extension.name;
             nameEl.textContent = extension.name;
             versionEl.textContent = `${msg("labelVersion")}: ${extension.version}`;
@@ -365,13 +370,17 @@
         extensionsListEl.replaceChildren(fragment);
     }
 
-    function pickIconUrl(icons = []) {
+    function pickIconUrl(icons = [], extensionId) {
+        if (extensionId === chrome.runtime.id) {
+            return `../icon/${selfIconVersion}/128.png`;
+        }
+
         if (!Array.isArray(icons) || icons.length === 0) {
-            return "../icon/logo.png";
+            return "../icon/v1/128.png";
         }
 
         const sorted = [...icons].sort((a, b) => (b.size || 0) - (a.size || 0));
-        return sorted[0].url || "../icon/logo.png";
+        return sorted[0].url || "../icon/v1/128.png";
     }
     //#endregion
 
@@ -383,7 +392,7 @@
         }
 
         currentDetailsExtension = extension;
-        detailIconEl.src = pickIconUrl(extension.icons);
+        detailIconEl.src = pickIconUrl(extension.icons, extension.id);
         detailIconEl.alt = extension.name;
         detailNameEl.textContent = extension.name;
         detailDescriptionEl.textContent = (extension.description || "").trim() || msg("noDescription");
@@ -541,8 +550,26 @@
     //#endregion
 
     //#region Init
+    async function loadSelfIconVersion() {
+        const settings = await chrome.storage.sync.get({ iconVersion: "v1" });
+        selfIconVersion = settings.iconVersion;
+    }
+
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        if (areaName !== "sync" || !changes.iconVersion) {
+            return;
+        }
+
+        selfIconVersion = changes.iconVersion.newValue;
+        renderList();
+        if (currentDetailsExtension && currentDetailsExtension.id === chrome.runtime.id) {
+            detailIconEl.src = pickIconUrl(currentDetailsExtension.icons, currentDetailsExtension.id);
+        }
+    });
+
     async function init() {
         applyStaticTexts();
+        await loadSelfIconVersion();
         await loadExtensions();
     }
 

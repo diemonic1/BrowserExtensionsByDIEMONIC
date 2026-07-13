@@ -2,17 +2,23 @@
     "manifest_version": 3,
     "name": "__MSG_name__",
     "description": "__MSG_description__",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "default_locale": "en",
     "action": {
         "default_title": "__MSG_name__",
         "default_popup": "popup/index.html",
         "default_icon": {
-            "16": "icon/16.png",
-            "32": "icon/32.png",
-            "48": "icon/48.png",
-            "128": "icon/128.png"
+            "16": "icon/v1/16.png",
+            "32": "icon/v1/32.png",
+            "48": "icon/v1/48.png",
+            "64": "icon/v1/64.png",
+            "128": "icon/v1/128.png",
+            "256": "icon/v1/256.png",
+            "512": "icon/v1/512.png"
         }
+    },
+    "options_ui": {
+        "page": "options/index.html"
     },
     "web_accessible_resources": [
         {
@@ -25,17 +31,21 @@
         }
     ],
     "icons": {
-        "16": "icon/16.png",
-        "32": "icon/32.png",
-        "48": "icon/48.png",
-        "128": "icon/128.png"
+        "16": "icon/v1/16.png",
+        "32": "icon/v1/32.png",
+        "48": "icon/v1/48.png",
+        "64": "icon/v1/64.png",
+        "128": "icon/v1/128.png",
+        "256": "icon/v1/256.png",
+        "512": "icon/v1/512.png"
     },
     "background": {
         "service_worker": "background.js"
     },
     "permissions": [
         "management",
-        "downloads"
+        "downloads",
+        "storage"
     ],
     "host_permissions": [
         "https://clients2.google.com/*",
