@@ -55,6 +55,7 @@
     // chrome.action.setIcon). Track the live selection separately to render our own row/modal
     // with the actually-selected icon instead.
     let selfIconVersion = "v1";
+    let groups = [];
     //#endregion
 
     //#region Localization
@@ -119,6 +120,53 @@
 
     function isDevelopmentExtension(extension) {
         return extension.installType === "development";
+    }
+
+    function parseGroupKeywords(rawKeywords) {
+        return String(rawKeywords || "")
+            .split(",")
+            .map((keyword) => keyword.trim().toLowerCase())
+            .filter((keyword) => keyword.length > 0);
+    }
+
+    // Splits extensions into ordered sections: one per configured group (in priority order,
+    // top group wins ties), plus a final section for anything unmatched. Groups with no
+    // keywords are skipped entirely. Rendered with a divider line between sections.
+    function buildGroupedSections(extensions) {
+        const claimed = new Set();
+        const sections = [];
+
+        groups.forEach((group) => {
+            const keywords = parseGroupKeywords(group.keywords);
+            if (keywords.length === 0) {
+                return;
+            }
+
+            const matched = extensions.filter((extension) => {
+                if (claimed.has(extension.id)) {
+                    return false;
+                }
+
+                const nameLower = (extension.name || "").toLowerCase();
+                return keywords.some((keyword) => nameLower.includes(keyword));
+            });
+
+            if (matched.length === 0) {
+                return;
+            }
+
+            matched.forEach((extension) => claimed.add(extension.id));
+            matched.sort(extensionComparator);
+            sections.push(matched);
+        });
+
+        const ungrouped = extensions.filter((extension) => !claimed.has(extension.id));
+        if (ungrouped.length > 0) {
+            ungrouped.sort(extensionComparator);
+            sections.push(ungrouped);
+        }
+
+        return sections;
     }
     //#endregion
 
@@ -287,84 +335,96 @@
     }
 
     function renderList() {
-        const sorted = [...allExtensions].sort(extensionComparator);
+        const sections = buildGroupedSections(allExtensions);
         const fragment = document.createDocumentFragment();
+        let position = 0;
 
-        sorted.forEach((extension, index) => {
-            const node = rowTemplateEl.content.firstElementChild.cloneNode(true);
-            node.dataset.id = extension.id;
-
-            const numberEl = node.querySelector(".ext-number");
-            const iconEl = node.querySelector(".ext-icon");
-            const nameEl = node.querySelector(".ext-name");
-            const versionEl = node.querySelector(".ext-version");
-            const rowDownloadBtnEl = node.querySelector(".row-download-btn");
-            const devBadgeEl = node.querySelector(".dev-badge");
-            const settingsBtnEl = node.querySelector(".settings-btn");
-            const toggleInputEl = node.querySelector(".toggle-input");
-            const toggleLabelEl = node.querySelector(".toggle");
-            const rowActionsEl = node.querySelector(".row-actions");
-
-            numberEl.textContent = `${index + 1}.`;
-            iconEl.src = pickIconUrl(extension.icons, extension.id);
-            iconEl.alt = extension.name;
-            nameEl.textContent = extension.name;
-            versionEl.textContent = `${msg("labelVersion")}: ${extension.version}`;
-
-            const isDev = isDevelopmentExtension(extension);
-            if (isDev) {
-                devBadgeEl.classList.remove("slot-placeholder");
-                devBadgeEl.textContent = msg("devBadge");
-                rowDownloadBtnEl.classList.add("slot-placeholder");
-                rowDownloadBtnEl.onclick = null;
-                rowDownloadBtnEl.title = "";
-            } else {
-                devBadgeEl.classList.add("slot-placeholder");
-                devBadgeEl.textContent = msg("devBadge");
-                rowDownloadBtnEl.classList.remove("slot-placeholder");
-                rowDownloadBtnEl.title = msg("downloadZipArchiveTitle");
-                rowDownloadBtnEl.querySelector("img").alt = msg("downloadZip");
-                rowDownloadBtnEl.addEventListener("click", async event => {
-                    event.stopPropagation();
-                    try {
-                        await downloadZipFromCrx(extension);
-                        NotificationService.show(msg("downloadStarted"));
-                    } catch {
-                        NotificationService.show(msg("zipExtractionFailed"));
-                    }
-                });
+        sections.forEach((section, sectionIndex) => {
+            if (sectionIndex > 0) {
+                const divider = document.createElement("li");
+                divider.className = "group-divider";
+                divider.setAttribute("aria-hidden", "true");
+                fragment.appendChild(divider);
             }
 
-            settingsBtnEl.title = msg("openSettings");
-            settingsBtnEl.querySelector("img").alt = msg("openSettings");
-            if (extension.optionsUrl) {
-                settingsBtnEl.classList.remove("slot-placeholder");
-                settingsBtnEl.addEventListener("click", event => {
+            section.forEach((extension) => {
+                position += 1;
+
+                const node = rowTemplateEl.content.firstElementChild.cloneNode(true);
+                node.dataset.id = extension.id;
+
+                const numberEl = node.querySelector(".ext-number");
+                const iconEl = node.querySelector(".ext-icon");
+                const nameEl = node.querySelector(".ext-name");
+                const versionEl = node.querySelector(".ext-version");
+                const rowDownloadBtnEl = node.querySelector(".row-download-btn");
+                const devBadgeEl = node.querySelector(".dev-badge");
+                const settingsBtnEl = node.querySelector(".settings-btn");
+                const toggleInputEl = node.querySelector(".toggle-input");
+                const toggleLabelEl = node.querySelector(".toggle");
+                const rowActionsEl = node.querySelector(".row-actions");
+
+                numberEl.textContent = `${position}.`;
+                iconEl.src = pickIconUrl(extension.icons, extension.id);
+                iconEl.alt = extension.name;
+                nameEl.textContent = extension.name;
+                versionEl.textContent = `${msg("labelVersion")}: ${extension.version}`;
+
+                const isDev = isDevelopmentExtension(extension);
+                if (isDev) {
+                    devBadgeEl.classList.remove("slot-placeholder");
+                    devBadgeEl.textContent = msg("devBadge");
+                    rowDownloadBtnEl.classList.add("slot-placeholder");
+                    rowDownloadBtnEl.onclick = null;
+                    rowDownloadBtnEl.title = "";
+                } else {
+                    devBadgeEl.classList.add("slot-placeholder");
+                    devBadgeEl.textContent = msg("devBadge");
+                    rowDownloadBtnEl.classList.remove("slot-placeholder");
+                    rowDownloadBtnEl.title = msg("downloadZipArchiveTitle");
+                    rowDownloadBtnEl.querySelector("img").alt = msg("downloadZip");
+                    rowDownloadBtnEl.addEventListener("click", async event => {
+                        event.stopPropagation();
+                        try {
+                            await downloadZipFromCrx(extension);
+                            NotificationService.show(msg("downloadStarted"));
+                        } catch {
+                            NotificationService.show(msg("zipExtractionFailed"));
+                        }
+                    });
+                }
+
+                settingsBtnEl.title = msg("openSettings");
+                settingsBtnEl.querySelector("img").alt = msg("openSettings");
+                if (extension.optionsUrl) {
+                    settingsBtnEl.classList.remove("slot-placeholder");
+                    settingsBtnEl.addEventListener("click", event => {
+                        event.stopPropagation();
+                        chrome.tabs.create({ url: extension.optionsUrl });
+                    });
+                } else {
+                    settingsBtnEl.classList.add("slot-placeholder");
+                }
+
+                toggleLabelEl.title = msg("toggleExtension");
+                toggleInputEl.checked = !!extension.enabled;
+                rowActionsEl.addEventListener("click", event => {
                     event.stopPropagation();
-                    chrome.tabs.create({ url: extension.optionsUrl });
                 });
-            } else {
-                settingsBtnEl.classList.add("slot-placeholder");
-            }
+                toggleInputEl.addEventListener("click", event => {
+                    event.stopPropagation();
+                });
+                toggleInputEl.addEventListener("change", async event => {
+                    event.stopPropagation();
+                    await handleToggleExtension(extension.id, event.target.checked);
+                });
 
-            toggleLabelEl.title = msg("toggleExtension");
-            toggleInputEl.checked = !!extension.enabled;
-            rowActionsEl.addEventListener("click", event => {
-                event.stopPropagation();
-            });
-            toggleInputEl.addEventListener("click", event => {
-                event.stopPropagation();
-            });
-            toggleInputEl.addEventListener("change", async event => {
-                event.stopPropagation();
-                await handleToggleExtension(extension.id, event.target.checked);
-            });
+                node.addEventListener("click", () => {
+                    openDetailsModal(extension.id);
+                });
 
-            node.addEventListener("click", () => {
-                openDetailsModal(extension.id);
+                fragment.appendChild(node);
             });
-
-            fragment.appendChild(node);
         });
 
         extensionsListEl.replaceChildren(fragment);
@@ -550,26 +610,41 @@
     //#endregion
 
     //#region Init
-    async function loadSelfIconVersion() {
-        const settings = await chrome.storage.sync.get({ iconVersion: "v1" });
+    async function loadPopupSettings() {
+        const settings = await chrome.storage.sync.get({ iconVersion: "v1", groups: [] });
         selfIconVersion = settings.iconVersion;
+        groups = Array.isArray(settings.groups) ? settings.groups : [];
     }
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
-        if (areaName !== "sync" || !changes.iconVersion) {
+        if (areaName !== "sync") {
             return;
         }
 
-        selfIconVersion = changes.iconVersion.newValue;
-        renderList();
-        if (currentDetailsExtension && currentDetailsExtension.id === chrome.runtime.id) {
+        let shouldRerender = false;
+
+        if (changes.iconVersion) {
+            selfIconVersion = changes.iconVersion.newValue;
+            shouldRerender = true;
+        }
+
+        if (changes.groups) {
+            groups = Array.isArray(changes.groups.newValue) ? changes.groups.newValue : [];
+            shouldRerender = true;
+        }
+
+        if (shouldRerender) {
+            renderList();
+        }
+
+        if (changes.iconVersion && currentDetailsExtension && currentDetailsExtension.id === chrome.runtime.id) {
             detailIconEl.src = pickIconUrl(currentDetailsExtension.icons, currentDetailsExtension.id);
         }
     });
 
     async function init() {
         applyStaticTexts();
-        await loadSelfIconVersion();
+        await loadPopupSettings();
         await loadExtensions();
     }
 

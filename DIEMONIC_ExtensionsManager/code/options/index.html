@@ -18,6 +18,29 @@
 
             <div class="icon-grid" id="iconGrid" role="group" aria-labelledby="iconSectionTitle"></div>
         </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2 id="groupsSectionTitle"></h2>
+                <button type="button" class="icon-btn" id="addGroupBtn">+</button>
+            </div>
+
+            <p class="section-hint" id="groupsInstructions"></p>
+
+            <div class="groups-list" id="groupsList"></div>
+            <p class="empty-hint hidden" id="groupsEmptyHint"></p>
+        </section>
+    </div>
+
+    <div class="modal-backdrop hidden" id="confirmBackdrop" aria-hidden="true">
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <h3 id="confirmTitle"></h3>
+            <p id="confirmText"></p>
+            <div class="confirm-actions">
+                <button type="button" class="btn btn-ghost" id="confirmCancelBtn"></button>
+                <button type="button" class="btn btn-solid" id="confirmDeleteBtn"></button>
+            </div>
+        </div>
     </div>
 
     <script src="options.js"></script>

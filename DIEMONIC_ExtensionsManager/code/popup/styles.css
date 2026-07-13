@@ -112,6 +112,13 @@ main::-webkit-scrollbar-thumb:hover {
     gap: 4px;
 }
 
+.group-divider {
+    height: 1px;
+    margin: 4px 6px;
+    background: rgba(255, 255, 255, 0.18);
+    list-style: none;
+}
+
 .extension-row {
     display: flex;
     align-items: center;

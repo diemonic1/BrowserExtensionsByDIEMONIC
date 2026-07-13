@@ -105,5 +105,32 @@
     },
     "iconOptionLabel": {
         "message": "Icon option"
+    },
+    "groupsSectionTitle": {
+        "message": "Groups"
+    },
+    "groupsInstructions": {
+        "message": "Each group has a comma-separated list of keywords (extra spaces are trimmed automatically). An extension joins a group if any of its keywords appears anywhere in the extension's name (not case-sensitive). Groups are checked from top to bottom: an extension is assigned to the first group it matches and can't also appear in a lower one. Within a group, extensions are sorted the same way as the regular list: enabled ones first, then development-mode ones, then alphabetically. Groups with no keywords are ignored. Extensions that don't match any group are shown at the bottom of the list, and groups are separated from each other (and from the unmatched extensions) by a thin divider line. Drag a group by its handle to change its priority — higher groups match first."
+    },
+    "addGroupLabel": {
+        "message": "Add group"
+    },
+    "removeGroupLabel": {
+        "message": "Remove group"
+    },
+    "dragGroupLabel": {
+        "message": "Drag to reorder"
+    },
+    "groupKeywordsPlaceholder": {
+        "message": "keyword1, keyword2, ..."
+    },
+    "groupsEmptyHint": {
+        "message": "No groups yet. Click + to add one."
+    },
+    "confirmGroupRemovalTitle": {
+        "message": "Remove group?"
+    },
+    "confirmGroupRemovalText": {
+        "message": "This group and its keywords will be removed. The extensions in it will just fall back to the regular list — nothing gets uninstalled."
     }
 }
