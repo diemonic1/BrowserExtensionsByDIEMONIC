@@ -1,0 +1,24 @@
+{
+    "extName": { "message": "D!EMONIC | Steam UI Extender" },
+    "extDescription": { "message": "Sorts the Steam notes list by AppID and flags Early Access games on your wishlist — two toggleable modules in one extension." },
+    "optionsTitle": { "message": "D!EMONIC | Steam UI Extender — Settings" },
+
+    "modulesCardTitle": { "message": "Modules" },
+
+    "moduleNotesLabel": { "message": "Sort the notes list" },
+    "moduleNotesDescription": { "message": "On steamcommunity.com/notes/list: games with a resolvable AppID are moved above a separator line, everything else below it." },
+
+    "moduleWishlistLabel": { "message": "Flag Early Access on the wishlist" },
+    "moduleWishlistDescription": { "message": "On your Steam wishlist, adds an \"Early Access\" label with a link to the news page for already-released Early Access games." },
+
+    "progressWaitingLabel": { "message": "Waiting for data..." },
+    "progressNoGamesLabel": { "message": "No matching games" },
+    "progressProcessingLabel": { "message": "Processing" },
+    "progressDoneLabel": { "message": "Done" },
+    "earlyAccessLabel": { "message": "Early Access" },
+    "openNewsTooltip": { "message": "Open the news list" },
+    "movedElementLog": {
+        "message": "Moved element down: appId $APPID$",
+        "placeholders": { "appid": { "content": "$1" } }
+    }
+}

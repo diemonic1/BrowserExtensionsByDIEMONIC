@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D!EMONIC Steam UI Extender</title>
+    <style>
+        html, body {
+            height: 100%;
+            min-height: 100vh;
+        }
+
+        body {
+            margin: 0;
+            min-width: 420px;
+            font-family: "Motiva Sans", Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(1100px 500px at 50% -160px, rgba(102, 192, 244, 0.10), transparent 65%),
+                #0e1621;
+            background-attachment: fixed;
+            color: #c6d4df;
+        }
+
+        .header-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 22px 32px;
+            background: #171a21;
+            border-bottom: 2px solid #000000;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #66c0f4;
+            font-weight: normal;
+        }
+
+        .card {
+            background: #16202d;
+            border: 1px solid #2a3f5a;
+            border-radius: 6px;
+            padding: 20px 22px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        }
+
+        .module-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 0;
+        }
+
+        .module-row:first-of-type {
+            padding-top: 4px;
+        }
+
+        .module-row:last-of-type {
+            padding-bottom: 4px;
+        }
+
+        .module-row + .module-row {
+            border-top: 1px solid #2a3f5a;
+        }
+
+        .module-row input[type="checkbox"] {
+            margin-top: 3px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #66c0f4;
+            flex-shrink: 0;
+        }
+
+        .module-text {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .module-label {
+            font-size: 15px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .module-description {
+            font-size: 13px;
+            color: #8f98a0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-block">
+        <img class="header-icon" src="icon/64.png" alt="" />
+        <div class="header-title">D!EMONIC | Steam UI Extender</div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2 data-i18n="modulesCardTitle"></h2>
+
+            <div class="module-row">
+                <input type="checkbox" id="moduleNotesExtenderEnabled" />
+                <div class="module-text">
+                    <label class="module-label" for="moduleNotesExtenderEnabled" data-i18n="moduleNotesLabel"></label>
+                    <div class="module-description" data-i18n="moduleNotesDescription"></div>
+                </div>
+            </div>
+
+            <div class="module-row">
+                <input type="checkbox" id="moduleWishlistExtenderEnabled" />
+                <div class="module-text">
+                    <label class="module-label" for="moduleWishlistExtenderEnabled" data-i18n="moduleWishlistLabel"></label>
+                    <div class="module-description" data-i18n="moduleWishlistDescription"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>

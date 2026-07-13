@@ -1,0 +1,24 @@
+{
+    "extName": { "message": "D!EMONIC | Steam UI Extender" },
+    "extDescription": { "message": "Сортирует список заметок Steam по AppID и отмечает игры в раннем доступе в вишлисте — два модуля с переключателями" },
+    "optionsTitle": { "message": "D!EMONIC | Steam UI Extender — Настройки" },
+
+    "modulesCardTitle": { "message": "Модули" },
+
+    "moduleNotesLabel": { "message": "Сортировка списка заметок" },
+    "moduleNotesDescription": { "message": "На странице steamcommunity.com/notes/list: игры с определяемым AppID поднимаются выше разделителя, остальные — ниже." },
+
+    "moduleWishlistLabel": { "message": "Отметка игр в раннем доступе в вишлисте" },
+    "moduleWishlistDescription": { "message": "В вашем списке желаемого Steam добавляет метку «Ранний доступ» со ссылкой на страницу новостей для уже вышедших игр в раннем доступе." },
+
+    "progressWaitingLabel": { "message": "Ожидание данных..." },
+    "progressNoGamesLabel": { "message": "Нет подходящих игр" },
+    "progressProcessingLabel": { "message": "Обработка" },
+    "progressDoneLabel": { "message": "Готово" },
+    "earlyAccessLabel": { "message": "Ранний доступ" },
+    "openNewsTooltip": { "message": "Открыть список новостей" },
+    "movedElementLog": {
+        "message": "Элемент перемещён вниз: appId $APPID$",
+        "placeholders": { "appid": { "content": "$1" } }
+    }
+}
