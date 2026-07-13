@@ -3,7 +3,7 @@
     "name": "__MSG_extName__",
     "description": "__MSG_extDescription__",
     "default_locale": "en",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "permissions": [ "storage" ],
     "host_permissions": [
         "https://steamcommunity.com/notes/list*",
@@ -30,6 +30,8 @@
         "32": "icon/32.png",
         "48": "icon/48.png",
         "64": "icon/64.png",
-        "128": "icon/128.png"
+        "128": "icon/128.png",
+        "256": "icon/256.png",
+        "512": "icon/512.png"
     }
 }

@@ -10,17 +10,29 @@
    "host_permissions": [ "<all_urls>" ],
    "manifest_version": 3,
    "name": "D!EMONIC | SaveAnyVideoBookmark",
-   "version": "1.0.0",
+   "version": "1.0.1",
    "background": {
       "service_worker": "background.js"
    },
    "icons": {
-      "16": "icon.png",
-      "32": "icon.png",
-      "48": "icon.png",  
-      "64": "icon.png",
-      "128": "icon.png"
+      "16": "icon/v1/16.png",
+      "32": "icon/v1/32.png",
+      "48": "icon/v1/48.png",
+      "64": "icon/v1/64.png",
+      "128": "icon/v1/128.png",
+      "256": "icon/v1/256.png",
+      "512": "icon/v1/512.png"
    },
-   "action": {},
+   "action": {
+      "default_icon": {
+         "16": "icon/v1/16.png",
+         "32": "icon/v1/32.png",
+         "48": "icon/v1/48.png",
+         "64": "icon/v1/64.png",
+         "128": "icon/v1/128.png",
+         "256": "icon/v1/256.png",
+         "512": "icon/v1/512.png"
+      }
+   },
    "options_page": "options.html"
 }
