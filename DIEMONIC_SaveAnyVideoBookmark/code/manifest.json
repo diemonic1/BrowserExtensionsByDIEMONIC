@@ -8,10 +8,8 @@
    "description": "Save a bookmark with any video",
    "permissions": ["bookmarks", "tabs", "scripting", "storage"],
    "host_permissions": [ "<all_urls>" ],
-   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0z1yuSfPXUNbOMpAzRpEbRA6N5Su5LneuzB2ajVtb7UbYlHWzlmAieckr+dFa5FdzOsK8UthhLlIKkH0ibx3CsecFta1q6oPILboKYYa8e8pt5hWbB7bpHwbu8/4n7QrfqI5X43dOt6GRn0VnobRcC3CF4P/hz2d+UFQTVoZVJfk67ayEzeDyx1gEubJGi11T2HXrIK2duXvNF7V2HOxLLf6+3jzfFgBq5tQ0yZ2Q41G+2KvUO8TZU7aumbYW5fwbKMIpDGBjLAtT5f3jOA8lCP4rm0stAhAg4Gu9zDYmJIWZEA88A1pVdr8mTp27l1aEfAqbzp+DZUI/tT7aLqUZQIDAQAB",
    "manifest_version": 3,
    "name": "D!EMONIC | SaveAnyVideoBookmark",
-   "update_url": "https://clients2.google.com/service/update2/crx",
    "version": "1.0.0",
    "background": {
       "service_worker": "background.js"
