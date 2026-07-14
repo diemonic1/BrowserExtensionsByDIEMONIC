@@ -40,46 +40,59 @@
 
         el.appendChild(div);
 
+        bindVideoProgress();
+    }
+
+    // Idempotent: safe to call repeatedly. The video element isn't always present yet at the
+    // moment the label's container gets mounted (YouTube can render the "owner" row before the
+    // player itself exists), so this is re-invoked on every updateViewProgress() pass until a
+    // <video> shows up and the listener actually gets attached - instead of only trying once and
+    // silently never updating if that one attempt was too early.
+    function bindVideoProgress() {
         const video = document.querySelector("video");
-        const diemonic_youtube_viewProgressTime = document.getElementById("diemonic_youtube_viewProgressTime");
-        const diemonic_youtube_viewProgressButtonBackTime = document.getElementById("diemonic_youtube_viewProgressButtonBackTime");
-        const diemonic_youtube_viewProgressTimeTitleTip = document.getElementById("diemonic_youtube_viewProgressTimeTitleTip");
+        if (!video || video.dataset.diemonicProgressBound === "1") {
+            return;
+        }
 
-        if (!video) {
-            window.__diemonicYT.log(chrome.i18n.getMessage("videoNotFoundLog"));
-        } else {
-            logThumbnail();
-            let lastTime = 0;
+        const timeEl = document.getElementById("diemonic_youtube_viewProgressTime");
+        const backTimeEl = document.getElementById("diemonic_youtube_viewProgressButtonBackTime");
+        const tipEl = document.getElementById("diemonic_youtube_viewProgressTimeTitleTip");
+        if (!timeEl || !backTimeEl || !tipEl) {
+            return;
+        }
 
-            video.addEventListener("timeupdate", () => {
-                const now = performance.now();
-                if (now - lastTime < 399) return;
-                lastTime = now;
+        video.dataset.diemonicProgressBound = "1";
+        logThumbnail();
+        let lastTime = 0;
 
-                const current = video.currentTime;
-                const duration = video.duration;
+        video.addEventListener("timeupdate", () => {
+            const now = performance.now();
+            if (now - lastTime < 399) return;
+            lastTime = now;
 
-                if (
-                    current != NaN && current != undefined &&
-                    duration != NaN && duration != undefined &&
-                    isFinite(duration) && duration > 0
-                ) {
-                    const percent = (current / duration) * 100;
-                    const percentText = percent.toFixed(1);
+            const current = video.currentTime;
+            const duration = video.duration;
 
-                    const tipText = chrome.i18n.getMessage("progressTooltip", [percentText, formatTime(duration - current)]);
-                    attachTooltip(diemonic_youtube_viewProgressTimeTitleTip, tipText);
+            if (
+                current != NaN && current != undefined &&
+                duration != NaN && duration != undefined &&
+                isFinite(duration) && duration > 0
+            ) {
+                const percent = (current / duration) * 100;
+                const percentText = percent.toFixed(1);
 
-                    diemonic_youtube_viewProgressButtonBackTime.style.background = `
+                const tipText = chrome.i18n.getMessage("progressTooltip", [percentText, formatTime(duration - current)]);
+                attachTooltip(tipEl, tipText);
+
+                backTimeEl.style.background = `
             conic-gradient(#6e6e6eff ${percent}%, #2b2827 ${percent}%)
           `;
 
-                    diemonic_youtube_viewProgressTime.innerText = formatTime(current) + " / " + formatTime(duration);
-                } else {
-                    diemonic_youtube_viewProgressTime.innerText = "???";
-                }
-            });
-        }
+                timeEl.innerText = formatTime(current) + " / " + formatTime(duration);
+            } else {
+                timeEl.innerText = "???";
+            }
+        });
     }
 
     function attachTooltip(element, text) {
@@ -163,6 +176,7 @@
         }
 
         if (container && container.parentElement === mountElement) {
+            bindVideoProgress();
             return;
         }
 
