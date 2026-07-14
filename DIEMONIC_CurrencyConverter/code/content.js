@@ -567,14 +567,31 @@ const TOOLTIP_CURSOR_OFFSET_Y = -120;
         processAllTooltips();
         attachTabPanelObservers();
 
+        // The tabpanel-scoped listeners above only exist on pages that actually render a
+        // [role="tabpanel"] wrapper (e.g. app pages with multiple tabs). Bundle/sub pages don't
+        // have one at all, so without a page-wide fallback, processAllTooltips() only ever runs
+        // once at load - before Highcharts has even created the tooltip element on hover - and
+        // never gets a chance to re-scan and discover it afterwards. A document-level listener
+        // works everywhere regardless of page layout.
+        document.addEventListener("pointermove", (event) => {
+            state.cursorClientX = event.clientX;
+            state.cursorClientY = event.clientY;
+            scheduleTooltipRefresh();
+        }, { passive: true });
+
         const pageObserver = new MutationObserver((mutations) => {
+            let hasAddedElement = false;
             for (const mutation of mutations) {
                 for (const addedNode of mutation.addedNodes) {
                     if (addedNode.nodeType !== Node.ELEMENT_NODE) {
                         continue;
                     }
+                    hasAddedElement = true;
                     attachTabPanelObservers(addedNode);
                 }
+            }
+            if (hasAddedElement) {
+                scheduleTooltipRefresh();
             }
         });
         pageObserver.observe(document.body, { childList: true, subtree: true });
