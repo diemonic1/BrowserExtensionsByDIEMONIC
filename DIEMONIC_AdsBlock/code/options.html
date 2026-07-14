@@ -27,9 +27,10 @@
     }
 
     h4 {
-        font-size: 14px;
+        font-size: 13px;
         color: #b0b0b0;
         font-weight: normal;
+        line-height: 1.4;
     }
 
     button {
@@ -59,6 +60,10 @@
         background-color: #b71c1c;
     }
 
+    .top-controls {
+        padding: 10px;
+    }
+
     .container {
         display: flex;
         gap: 12px;
@@ -71,31 +76,45 @@
         border-radius: 10px;
         padding: 12px;
         flex: 1;
-        min-width: 250px;
+        min-width: 500px;
+        max-width: 550px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         border: 1px solid #2a2a2a;
+    }
+
+    .card-scroll {
+        max-height: 320px;
+        overflow-y: auto;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        table-layout: fixed; /* одинаковая ширина колонок */
+        table-layout: fixed;
         margin-top: 8px;
-        border: 1px solid #000; /* внешняя граница */
+        border: 1px solid #000;
     }
 
     th, td {
-        padding: 8px;
+        padding: 6px 8px;
         text-align: left;
-        border: 1px solid #000; /* чёрные бортики */
+        border: 1px solid #000;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        font-size: 13px;
+    }
+
+    th:first-child, td:first-child {
+        width: 34px;
+        text-align: right;
     }
 
     th {
         background-color: #2c2c2c;
         color: #90caf9;
         font-weight: normal;
+        position: sticky;
+        top: 0;
     }
 
     tr:nth-child(even) {
@@ -110,14 +129,10 @@
         background-color: #333;
     }
 
-    .list-item {
-        padding: 6px 8px;
-        border-bottom: 1px solid #2a2a2a;
-        font-size: 14px;
-    }
-
-    .list-item:last-child {
-        border-bottom: none;
+    .empty-row td {
+        color: #777;
+        font-style: italic;
+        text-align: center;
     }
 
     .header-block {
@@ -148,7 +163,6 @@
 </style>
 </head>
 <body>
-    <script src="options.js"></script>
     <div class="settings-section">
         <label class="settings-label">
             <input type="checkbox" id="DIEMONIC_ADS_BLOCK_enabled_checkbox">
@@ -159,38 +173,84 @@
             Выводить сообщения в консоль
         </label>
     </div>
-    <h2>Удалить конфиги. В них хранится, как удалять рекламу. 
-        После удаления они принудительно обновятся, когда вы попадете на страницу, на которой блокируется реклама.</h2>
-    <button class="button-red" id="DIEMONIC_ADS_BLOCK_resetBtn">Удалить конфиги</button>
-    <button id="DIEMONIC_ADS_BLOCK_openBtn">Открыть конфиги</button>
 
-    <br>
-    <h1>Последнее время проверки конфигов: <span id="DIEMONIC_ADS_BLOCK_latUpdateTime"></span></h1>
-    <div style="display: flex;">
-        <div style="border: 1px solid; padding: 4px;">
+    <div class="top-controls">
+        <h2>Конфиги. В них хранится, как блокировать рекламу.
+            После удаления они принудительно обновятся, когда вы попадёте на страницу, на которой блокируется реклама.</h2>
+        <button class="button-red" id="DIEMONIC_ADS_BLOCK_resetBtn">Обновить конфиги</button>
+        <button id="DIEMONIC_ADS_BLOCK_openBtn">Открыть конфиги</button>
+
+        <h1>Последнее время проверки конфигов: <span id="DIEMONIC_ADS_BLOCK_latUpdateTime"></span></h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
             <h2>elementsToDelete</h2>
-            <h4>Эти элементы удаляются сразу</h4>
-            <div id="DIEMONIC_ADS_BLOCK_elementsToDelete"></div>
+            <h4>Эти элементы удаляются из страницы сразу, без каких-либо проверок.</h4>
+            <div class="card-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <tbody id="DIEMONIC_ADS_BLOCK_elementsToDelete"></tbody>
+                </table>
+            </div>
         </div>
-        <div style="border: 1px solid; padding: 4px;">
-            <h2>elementsToCheck</h2>
-            <h4>Эти элементы проверяются. Если в них содержатся banWords, они удаляются</h4>
-            <div id="DIEMONIC_ADS_BLOCK_elementsToCheck"></div>
+
+        <div class="card">
+            <h2>elementsToCheckDelete</h2>
+            <h4>Эти элементы проверяются: если внутри встречается одно из banWords и нет ни одного stopWords — элемент удаляется.</h4>
+            <div class="card-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <tbody id="DIEMONIC_ADS_BLOCK_elementsToCheckDelete"></tbody>
+                </table>
+            </div>
         </div>
-        <div style="border: 1px solid; padding: 4px;">
+
+        <div class="card">
+            <h2>elementsToCheckHide</h2>
+            <h4>Проверяются так же, как elementsToCheckDelete (через те же banWords/stopWords), но при совпадении не удаляются, а только скрываются (display: none) — используется для элементов внутри "живых" сеток, где удаление узла может сломать рендер страницы.</h4>
+            <div class="card-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <tbody id="DIEMONIC_ADS_BLOCK_elementsToCheckHide"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
             <h2>banWords</h2>
-            <div id="DIEMONIC_ADS_BLOCK_banWords"></div>
+            <h4>Общий список для elementsToCheckDelete и elementsToCheckHide: если внутри найденного элемента встречается любое из этих слов — он считается рекламой.</h4>
+            <div class="card-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Слово</th></tr></thead>
+                    <tbody id="DIEMONIC_ADS_BLOCK_banWords"></tbody>
+                </table>
+            </div>
         </div>
-        <div style="border: 1px solid; padding: 4px;">
+
+        <div class="card">
             <h2>stopWords</h2>
-            <h4>Если elementsToCheck содержат stopWords, они не удаляются</h4>
-            <div id="DIEMONIC_ADS_BLOCK_stopWords"></div>
+            <h4>Общий список для elementsToCheckDelete и elementsToCheckHide: если встречается любое из этих слов — элемент не трогается, даже если совпал с banWords.</h4>
+            <div class="card-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Слово</th></tr></thead>
+                    <tbody id="DIEMONIC_ADS_BLOCK_stopWords"></tbody>
+                </table>
+            </div>
         </div>
-        <div style="border: 1px solid; padding: 4px;">
+
+        <div class="card">
             <h2>elementsToHide</h2>
-            <h4>Эти элементы скрываются</h4>
-            <div id="DIEMONIC_ADS_BLOCK_elementsToHide"></div>
+            <h4>Эти элементы всегда только скрываются (display: none), без проверки banWords/stopWords.</h4>
+            <div class="card-scroll">
+                <table>
+                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <tbody id="DIEMONIC_ADS_BLOCK_elementsToHide"></tbody>
+                </table>
+            </div>
         </div>
     </div>
+
+    <script src="options.js"></script>
 </body>
 </html>
