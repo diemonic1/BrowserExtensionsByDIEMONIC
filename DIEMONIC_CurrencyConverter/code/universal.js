@@ -486,6 +486,140 @@
 
                 node.parentNode.replaceChild(frag, node);
             });
+
+            scanElementLevel(root);
+        }
+
+        // Walks a container's descendant Text nodes in document order and records the offset
+        // range each one occupies within the container's flattened textContent - the same
+        // concatenation textContent itself uses (Comment nodes contribute nothing, exactly like
+        // textContent), so offsets found via extractPriceParts(container.textContent) line up
+        // with this exactly.
+        function collectTextSegments(container) {
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+            const segments = [];
+            let offset = 0;
+            let node;
+            while ((node = walker.nextNode())) {
+                const value = node.nodeValue || "";
+                segments.push({ node, start: offset, end: offset + value.length });
+                offset += value.length;
+            }
+            return segments;
+        }
+
+        function locateOffset(segments, offset) {
+            for (const segment of segments) {
+                if (offset >= segment.start && offset <= segment.end) {
+                    return { node: segment.node, localOffset: offset - segment.start };
+                }
+            }
+            return null;
+        }
+
+        // Wraps only the matched price substring in a new span, even when it's spread across
+        // several sibling text nodes (e.g. split up by "<!-- -->" hydration comments) - instead
+        // of styling/binding the whole surrounding phrase, which would make the entire sentence
+        // hoverable rather than just the price itself.
+        function wrapMatchRange(segments, part, parsed) {
+            const startPoint = locateOffset(segments, part.start);
+            const endPoint = locateOffset(segments, part.end);
+            if (!startPoint || !endPoint) {
+                return false;
+            }
+
+            try {
+                const range = document.createRange();
+                range.setStart(startPoint.node, startPoint.localOffset);
+                range.setEnd(endPoint.node, endPoint.localOffset);
+
+                const span = document.createElement("span");
+                span.className = "dc-price-target";
+                span.style.cursor = "help";
+                span.style.textDecoration = `underline dotted ${COLOR_OF_UNDERLINE}`;
+                span.style.textUnderlineOffset = "2px";
+                span.tabIndex = -1;
+
+                range.surroundContents(span);
+                bindSpan(span, parsed);
+                return true;
+            } catch (e) {
+                // surroundContents() throws if the range's boundaries don't line up cleanly with
+                // node structure (e.g. a partially-selected element in some unusual markup) -
+                // just skip this candidate rather than falling back to whole-element styling.
+                return false;
+            }
+        }
+
+        // The text-node pass above only ever looks at a single text node's own textContent, so
+        // it can never see a price whose number and currency symbol/word are split across
+        // sibling nodes (e.g. "<span>3 200</span> <span>$</span>", common in real-world markup
+        // where the currency sign is templated separately, or hydration frameworks splicing
+        // "<!-- -->" comments between text runs). This pass looks at each small container
+        // element's combined textContent (which includes descendant text) to find such a price,
+        // then wraps only the matched substring itself - not the whole surrounding phrase.
+        function scanElementLevel(root) {
+            const container = root && root.nodeType === Node.ELEMENT_NODE ? root : document.body;
+            if (!container || !container.querySelectorAll) {
+                return;
+            }
+
+            const candidates = [container, ...container.querySelectorAll("*")];
+
+            candidates.forEach((element) => {
+                if (processed.has(element)) {
+                    return;
+                }
+                if (element.childNodes.length <= 1) {
+                    // Only one child node total (whether text, comment or element) - there's
+                    // nothing here that the text-node pass above couldn't already see by itself.
+                    // Note this deliberately counts Comment nodes too: React/hydration frameworks
+                    // often splice empty "<!-- -->" comments between otherwise-adjacent text runs
+                    // (e.g. "2 000<!-- -->" + "<!-- --> до <!-- -->" + "3 000<!-- --> $"), which
+                    // splits one logical price across many sibling text nodes without adding any
+                    // actual child *elements* - textContent still joins them back together fine.
+                    return;
+                }
+                if (element.closest("script,style,textarea,code,pre,noscript")) {
+                    return;
+                }
+                if (element.closest(".dc-price-target")) {
+                    return;
+                }
+                if (element.closest("[data-ext-converted], [data-ext-price-mem]")) {
+                    return;
+                }
+                if (element.querySelector(".dc-price-target")) {
+                    // The text-node pass already found and wrapped the price somewhere inside -
+                    // don't double up on the parent too.
+                    return;
+                }
+
+                const text = element.textContent;
+                if (!text || text.length > 60) {
+                    return;
+                }
+                if (!isElementVisible(element)) {
+                    return;
+                }
+
+                const parts = extractPriceParts(text);
+                if (parts.length !== 1) {
+                    // Also guards against ambiguity: if a container legitimately has more than
+                    // one distinct price in it, we wouldn't know which one a single tooltip on
+                    // the whole element should represent.
+                    return;
+                }
+
+                const part = parts[0];
+                const parsed = parsePriceCandidate(part.value);
+                if (!parsed || parsed.code === "RUB") {
+                    return;
+                }
+
+                const segments = collectTextSegments(element);
+                wrapMatchRange(segments, part, parsed);
+            });
         }
 
         scan(document.body);
