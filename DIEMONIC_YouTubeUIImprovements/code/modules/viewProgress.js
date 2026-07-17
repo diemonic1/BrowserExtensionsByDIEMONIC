@@ -43,29 +43,56 @@
         bindVideoProgress();
     }
 
+    // Tracks which <video> + label-container pair the timeupdate listener is currently attached
+    // to, so a stale listener never lingers on the wrong (removed) container.
+    let boundVideo = null;
+    let boundTimeEl = null;
+    let boundVideoListener = null;
+
+    function unbindVideoProgress() {
+        if (boundVideo && boundVideoListener) {
+            boundVideo.removeEventListener("timeupdate", boundVideoListener);
+        }
+        boundVideo = null;
+        boundTimeEl = null;
+        boundVideoListener = null;
+    }
+
     // Idempotent: safe to call repeatedly. The video element isn't always present yet at the
     // moment the label's container gets mounted (YouTube can render the "owner" row before the
     // player itself exists), so this is re-invoked on every updateViewProgress() pass until a
-    // <video> shows up and the listener actually gets attached - instead of only trying once and
-    // silently never updating if that one attempt was too early.
+    // <video> shows up and the listener actually gets attached.
+    //
+    // YouTube also periodically rebuilds the "owner" row's own contents on its own (e.g. when a
+    // subscribe-button/member-badge state changes), which silently discards whatever container we
+    // previously injected into it - a fresh one then gets created by onElementReady(). Gating on
+    // "have we ever bound to this <video> before" (as this used to) meant that very first rebuild
+    // permanently orphaned the label, since the old flag blocked ever rebinding again to the new
+    // container. Comparing against the *current* timeEl instance instead means a freshly recreated
+    // container is correctly detected and rebound to.
     function bindVideoProgress() {
         const video = document.querySelector("video");
-        if (!video || video.dataset.diemonicProgressBound === "1") {
-            return;
-        }
-
         const timeEl = document.getElementById("diemonic_youtube_viewProgressTime");
         const backTimeEl = document.getElementById("diemonic_youtube_viewProgressButtonBackTime");
         const tipEl = document.getElementById("diemonic_youtube_viewProgressTimeTitleTip");
-        if (!timeEl || !backTimeEl || !tipEl) {
+
+        if (!video || !timeEl || !backTimeEl || !tipEl) {
             return;
         }
 
-        video.dataset.diemonicProgressBound = "1";
+        if (boundVideo === video && boundTimeEl === timeEl) {
+            return;
+        }
+
+        unbindVideoProgress();
+        cancelMountWatch();
         logThumbnail();
+
+        boundVideo = video;
+        boundTimeEl = timeEl;
         let lastTime = 0;
 
-        video.addEventListener("timeupdate", () => {
+        boundVideoListener = () => {
             const now = performance.now();
             if (now - lastTime < 399) return;
             lastTime = now;
@@ -92,7 +119,9 @@
             } else {
                 timeEl.innerText = "???";
             }
-        });
+        };
+
+        video.addEventListener("timeupdate", boundVideoListener);
     }
 
     function attachTooltip(element, text) {
@@ -162,13 +191,77 @@
         return document.getElementById("owner");
     }
 
+    // How long to wait, after landing on a video page, before treating "still not mounted" as a
+    // genuine failure worth an error log rather than just "YouTube hasn't finished rendering yet".
+    const MOUNT_WATCH_TIMEOUT_MS = 8000;
+    let mountWatchTimeoutId = null;
+    let mountWatchUrl = null;
+
+    function cancelMountWatch() {
+        if (mountWatchTimeoutId) {
+            clearTimeout(mountWatchTimeoutId);
+            mountWatchTimeoutId = null;
+        }
+    }
+
+    function resetMountWatch() {
+        cancelMountWatch();
+        mountWatchTimeoutId = setTimeout(reportMountFailureIfAny, MOUNT_WATCH_TIMEOUT_MS);
+    }
+
+    function reportMountFailureIfAny() {
+        mountWatchTimeoutId = null;
+
+        if (!isVideoPage()) {
+            return;
+        }
+
+        const video = document.querySelector("video");
+        if (video && boundVideo === video && boundTimeEl === document.getElementById("diemonic_youtube_viewProgressTime")) {
+            return;
+        }
+
+        const reasons = [];
+        const mountElement = getMountElement();
+        const isPlaylist = window.location.pathname === "/playlist";
+
+        if (!mountElement) {
+            reasons.push(chrome.i18n.getMessage(
+                isPlaylist ? "progressReasonNoAnchorPlaylist" : "progressReasonNoAnchor"
+            ));
+        }
+
+        if (!video) {
+            reasons.push(chrome.i18n.getMessage("progressReasonNoVideo"));
+        } else if (!document.getElementById("diemonic_youtube_viewProgressTime")) {
+            reasons.push(chrome.i18n.getMessage("progressReasonNoContainer"));
+        }
+
+        if (!reasons.length) {
+            reasons.push(chrome.i18n.getMessage("progressReasonUnknown"));
+        }
+
+        window.__diemonicYT.logError(chrome.i18n.getMessage("progressMountFailedLog", [
+            document.URL,
+            reasons.join("; "),
+        ]));
+    }
+
     function updateViewProgress() {
         const mountElement = getMountElement();
         const container = document.getElementById("diemonic_youtube_viewProgress");
 
         if (!isVideoPage()) {
             removeViewProgress();
+            unbindVideoProgress();
+            cancelMountWatch();
+            mountWatchUrl = null;
             return;
+        }
+
+        if (document.URL !== mountWatchUrl) {
+            mountWatchUrl = document.URL;
+            resetMountWatch();
         }
 
         if (!mountElement) {

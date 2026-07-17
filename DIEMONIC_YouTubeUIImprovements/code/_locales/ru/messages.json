@@ -49,5 +49,15 @@
     "progressTooltip": {
         "message": "$PERCENT$% просмотрено, $TIME$ осталось",
         "placeholders": { "percent": { "content": "$1" }, "time": { "content": "$2" } }
-    }
+    },
+
+    "progressMountFailedLog": {
+        "message": "Лейбл прогресса просмотра не появился на странице $URL$: $REASONS$",
+        "placeholders": { "url": { "content": "$1" }, "reasons": { "content": "$2" } }
+    },
+    "progressReasonNoAnchor": { "message": "не найден якорный элемент #owner" },
+    "progressReasonNoAnchorPlaylist": { "message": "не найден якорный элемент .yt-page-header-view-model__scroll-container" },
+    "progressReasonNoVideo": { "message": "на странице не найден элемент <video>" },
+    "progressReasonNoContainer": { "message": "отсутствует собственный контейнер лейбла" },
+    "progressReasonUnknown": { "message": "неизвестная причина" }
 }

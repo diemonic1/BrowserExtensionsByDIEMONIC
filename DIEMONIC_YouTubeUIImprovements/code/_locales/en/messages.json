@@ -49,5 +49,15 @@
     "progressTooltip": {
         "message": "$PERCENT$% watched, $TIME$ remaining",
         "placeholders": { "percent": { "content": "$1" }, "time": { "content": "$2" } }
-    }
+    },
+
+    "progressMountFailedLog": {
+        "message": "Watch progress label failed to appear on $URL$: $REASONS$",
+        "placeholders": { "url": { "content": "$1" }, "reasons": { "content": "$2" } }
+    },
+    "progressReasonNoAnchor": { "message": "anchor element #owner was not found on the page" },
+    "progressReasonNoAnchorPlaylist": { "message": "anchor element .yt-page-header-view-model__scroll-container was not found on the page" },
+    "progressReasonNoVideo": { "message": "no <video> element was found on the page" },
+    "progressReasonNoContainer": { "message": "the label's own container element is missing" },
+    "progressReasonUnknown": { "message": "unknown reason" }
 }
