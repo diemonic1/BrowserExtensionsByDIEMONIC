@@ -6,13 +6,6 @@
       "matches": [ "https://spb.hh.ru/vacancy/*", "https://*.hh.ru/vacancy/*", "https://hh.ru/vacancy/*" ]
    } ],
    "description": "Генерация сопроводительного письма на HH.ru / Резюме задается через настройки расширения",
-   "web_accessible_resources":[
-      {
-         "resources": [ "catPilot.ico" ],
-         "matches": [ "<all_urls>" ]
-      }
-   ],
-   "host_permissions": [ "https://www.youtube.com/*" ],
    "permissions": [ "storage" ],
    "options_ui": {
       "page": "options.html",
