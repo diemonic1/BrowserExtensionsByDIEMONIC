@@ -191,36 +191,69 @@
         return document.getElementById("owner");
     }
 
-    // How long to wait, after landing on a video page, before treating "still not mounted" as a
-    // genuine failure worth an error log rather than just "YouTube hasn't finished rendering yet".
-    const MOUNT_WATCH_TIMEOUT_MS = 8000;
-    let mountWatchTimeoutId = null;
+    // Repeatedly re-checks (instead of a single one-shot timeout) after landing on a video page,
+    // giving the label several chances to (re)mount itself before treating it as a genuine
+    // failure - a single transient timing hiccup (our MutationObserver callback hasn't run yet
+    // right at the moment of the check) shouldn't by itself be reported as an error.
+    const MOUNT_WATCH_INTERVAL_MS = 1000;
+    const MOUNT_WATCH_MAX_CHECKS = 8;
+    let mountWatchIntervalId = null;
+    let mountWatchChecksLeft = 0;
     let mountWatchUrl = null;
 
     function cancelMountWatch() {
-        if (mountWatchTimeoutId) {
-            clearTimeout(mountWatchTimeoutId);
-            mountWatchTimeoutId = null;
+        if (mountWatchIntervalId) {
+            clearInterval(mountWatchIntervalId);
+            mountWatchIntervalId = null;
         }
     }
 
     function resetMountWatch() {
         cancelMountWatch();
-        mountWatchTimeoutId = setTimeout(reportMountFailureIfAny, MOUNT_WATCH_TIMEOUT_MS);
+        mountWatchChecksLeft = MOUNT_WATCH_MAX_CHECKS;
+        mountWatchIntervalId = setInterval(runMountWatchCheck, MOUNT_WATCH_INTERVAL_MS);
     }
 
-    function reportMountFailureIfAny() {
-        mountWatchTimeoutId = null;
-
-        if (!isVideoPage()) {
-            return;
-        }
-
+    function isBoundAndMounted() {
         const video = document.querySelector("video");
-        if (video && boundVideo === video && boundTimeEl === document.getElementById("diemonic_youtube_viewProgressTime")) {
+        return Boolean(
+            video &&
+            boundVideo === video &&
+            boundTimeEl === document.getElementById("diemonic_youtube_viewProgressTime")
+        );
+    }
+
+    function runMountWatchCheck() {
+        if (!isVideoPage()) {
+            cancelMountWatch();
             return;
         }
 
+        if (isBoundAndMounted()) {
+            cancelMountWatch();
+            return;
+        }
+
+        // Give it one more real attempt to (re)mount right now - a container that YouTube just
+        // happened to wipe a moment ago may already be fixable before we ever report anything.
+        updateViewProgress();
+
+        if (isBoundAndMounted()) {
+            cancelMountWatch();
+            return;
+        }
+
+        mountWatchChecksLeft -= 1;
+        if (mountWatchChecksLeft > 0) {
+            return;
+        }
+
+        cancelMountWatch();
+        reportMountFailure();
+    }
+
+    function reportMountFailure() {
+        const video = document.querySelector("video");
         const reasons = [];
         const mountElement = getMountElement();
         const isPlaylist = window.location.pathname === "/playlist";
@@ -268,7 +301,15 @@
             return;
         }
 
-        if (container && container.parentElement === mountElement) {
+        if (
+            container &&
+            container.parentElement === mountElement &&
+            document.getElementById("diemonic_youtube_viewProgressTime")
+        ) {
+            // The outer container can survive while YouTube wipes/rebuilds its own inner
+            // content around it (e.g. re-rendering something else inside #owner) - checking
+            // only the outer container's presence/parent isn't enough; if the label's own
+            // inner elements are gone, fall through and rebuild the whole thing from scratch.
             bindVideoProgress();
             return;
         }
