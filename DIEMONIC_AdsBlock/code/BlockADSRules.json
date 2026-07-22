@@ -26,6 +26,7 @@
         "[class*='ya-recommendation-widget']",
         "[class*='content--ad']",
         "[class*='VideoViewer-Direct_placement_video-list']",
+        "[class*='ImagesViewer-AdvPlaceholderContent']",
         "[data-testid*='adfox']",
         "[data-testid*='ommercialBanner']",
         "[data-testid*='afishaProfit.wrapper']",
@@ -33,6 +34,7 @@
         "[data-test-id*='ommercialBanner']",
         "[data-test-id*='afishaProfit.wrapper']",
         "[data-zone-name*='headerPromoStreamer']",
+        "[data-apiary-widget-name*='@monetize/HeroBannerCarousel']",
         "[data-apiary-widget-name*='monetize/HeroBannersCarousel']",
         "[data-apiary-widget-name*='monetize/HeroCarousel']",
         "[data-name*='adWrapper']"
@@ -40,6 +42,7 @@
     "elementsToCheckDelete": [
         "[class*='Organic_withaq']",
         "[class*='RsyaOrganic']",
+        "[class*='ImagesViewer-SidebarProducts']",
         "[data-testid*='page-layout_right-column_container']",
         "[data-test-id*='page-layout_right-column_container']",
         "[id*='heroBanner']",
@@ -49,7 +52,8 @@
     ],
     "elementsToCheckHide": [
         "[class*='serp-item_card']",
-        "[class*='JustifierColumnLayout-Item']"
+        "[class*='JustifierColumnLayout-Item']",
+        "[data-apiary-widget-name*='@marketfront/RecomEntity']"
     ],
     "banWords": [
         "practicum.yandex.ru", 
@@ -68,6 +72,11 @@
     ],
     "elementsToHide": [
         "[data-auto*='creativeBanner']",
-        "[data-apiary-widget-name*='marketfront/RecomMediaAdv']"
+        "[data-apiary-widget-name*='marketfront/RecomMediaAdv']",
+        "[data-apiary-widget-name*='@marketfront/RecomMediaAdv']"
+    ],
+    "LinksToCheck": [
+        "https://yandex.ru/images/search?from=tabbar&img_url=https%3A%2F%2Fdaniland.ru%2Fupload%2Fuf%2Faac%2F67wzlm860qe2lcqtf92hxrn4ntn6rnb2%2F161007-0-1.webp&lr=120590&pos=0&rpt=simage&text=пистолет%20игрушечный",
+        "https://yandex.ru/search/?text=в+какой+университет+поступить&lr=120590&clid=2270455&win=609&src=suggest_B"
     ]
 }

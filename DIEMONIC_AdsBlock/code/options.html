@@ -160,6 +160,39 @@
         cursor: pointer;
         accent-color: #2f4dd3;
     }
+
+    .local-inputs {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #2a2a2a;
+    }
+
+    .local-inputs h4 {
+        margin-top: 0;
+    }
+
+    .local-input-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .local-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 8px;
+        font-size: 13px;
+        font-family: inherit;
+        background-color: #121212;
+        color: #e0e0e0;
+        border: 1px solid #333;
+        border-radius: 6px;
+    }
+
+    .local-input:focus {
+        outline: none;
+        border-color: #2f4dd3;
+    }
 </style>
 </head>
 <body>
@@ -179,6 +212,7 @@
             После удаления они принудительно обновятся, когда вы попадёте на страницу, на которой блокируется реклама.</h2>
         <button class="button-red" id="DIEMONIC_ADS_BLOCK_resetBtn">Обновить конфиги</button>
         <button id="DIEMONIC_ADS_BLOCK_openBtn">Открыть конфиги</button>
+        <button id="DIEMONIC_ADS_BLOCK_openLinksBtn" style="margin-left: 24px;">Открыть ссылки на проверку</button>
 
         <h1>Последнее время проверки конфигов: <span id="DIEMONIC_ADS_BLOCK_latUpdateTime"></span></h1>
     </div>
@@ -193,6 +227,14 @@
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToDelete"></tbody>
                 </table>
             </div>
+            <div class="local-inputs" data-local-key="elementsToDelete">
+                <h4>Локальные тестовые значения (только на этом устройстве, не скачиваются из сети)</h4>
+                <div class="local-input-row">
+                    <input type="text" class="local-input" data-index="0" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="1" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="2" placeholder="Селектор для локального теста">
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -203,6 +245,14 @@
                     <thead><tr><th>#</th><th>Селектор</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToCheckDelete"></tbody>
                 </table>
+            </div>
+            <div class="local-inputs" data-local-key="elementsToCheckDelete">
+                <h4>Локальные тестовые значения (только на этом устройстве, не скачиваются из сети)</h4>
+                <div class="local-input-row">
+                    <input type="text" class="local-input" data-index="0" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="1" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="2" placeholder="Селектор для локального теста">
+                </div>
             </div>
         </div>
 
@@ -215,6 +265,14 @@
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToCheckHide"></tbody>
                 </table>
             </div>
+            <div class="local-inputs" data-local-key="elementsToCheckHide">
+                <h4>Локальные тестовые значения (только на этом устройстве, не скачиваются из сети)</h4>
+                <div class="local-input-row">
+                    <input type="text" class="local-input" data-index="0" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="1" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="2" placeholder="Селектор для локального теста">
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -225,6 +283,14 @@
                     <thead><tr><th>#</th><th>Слово</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_banWords"></tbody>
                 </table>
+            </div>
+            <div class="local-inputs" data-local-key="banWords">
+                <h4>Локальные тестовые значения (только на этом устройстве, не скачиваются из сети)</h4>
+                <div class="local-input-row">
+                    <input type="text" class="local-input" data-index="0" placeholder="Слово для локального теста">
+                    <input type="text" class="local-input" data-index="1" placeholder="Слово для локального теста">
+                    <input type="text" class="local-input" data-index="2" placeholder="Слово для локального теста">
+                </div>
             </div>
         </div>
 
@@ -237,6 +303,14 @@
                     <tbody id="DIEMONIC_ADS_BLOCK_stopWords"></tbody>
                 </table>
             </div>
+            <div class="local-inputs" data-local-key="stopWords">
+                <h4>Локальные тестовые значения (только на этом устройстве, не скачиваются из сети)</h4>
+                <div class="local-input-row">
+                    <input type="text" class="local-input" data-index="0" placeholder="Слово для локального теста">
+                    <input type="text" class="local-input" data-index="1" placeholder="Слово для локального теста">
+                    <input type="text" class="local-input" data-index="2" placeholder="Слово для локального теста">
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -247,6 +321,14 @@
                     <thead><tr><th>#</th><th>Селектор</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToHide"></tbody>
                 </table>
+            </div>
+            <div class="local-inputs" data-local-key="elementsToHide">
+                <h4>Локальные тестовые значения (только на этом устройстве, не скачиваются из сети)</h4>
+                <div class="local-input-row">
+                    <input type="text" class="local-input" data-index="0" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="1" placeholder="Селектор для локального теста">
+                    <input type="text" class="local-input" data-index="2" placeholder="Селектор для локального теста">
+                </div>
             </div>
         </div>
     </div>

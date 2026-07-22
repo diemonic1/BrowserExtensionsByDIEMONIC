@@ -74,6 +74,78 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Local test values: up to 3 extra entries per category the user can type directly into
+    // the options page, for local testing without needing to publish/re-download the remote
+    // rules file. content.js merges these into the same list it uses for matching (see
+    // mergeLocalTestValues() there) - empty inputs and exact duplicates of an existing rule are
+    // ignored at that point, not here, so what's shown/saved here is just the raw input state.
+    const LOCAL_TEST_CATEGORIES = [
+        'elementsToDelete',
+        'elementsToCheckDelete',
+        'elementsToCheckHide',
+        'banWords',
+        'stopWords',
+        'elementsToHide'
+    ];
+
+    function localStorageKey(category) {
+        return 'DIEMONIC_ADS_BLOCK_local_' + category;
+    }
+
+    function parseLocalSlots(rawValue) {
+        if (rawValue) {
+            try {
+                const parsed = JSON.parse(rawValue);
+                if (Array.isArray(parsed)) {
+                    const slots = parsed.slice(0, 3).map((v) => String(v || ''));
+                    while (slots.length < 3) {
+                        slots.push('');
+                    }
+                    return slots;
+                }
+            } catch (e) {
+                // fall through to defaults below
+            }
+        }
+        return ['', '', ''];
+    }
+
+    function initLocalInputs() {
+        const localKeys = LOCAL_TEST_CATEGORIES.map(localStorageKey);
+
+        chrome.storage.local.get(localKeys, (result) => {
+            LOCAL_TEST_CATEGORIES.forEach((category) => {
+                const section = document.querySelector(`.local-inputs[data-local-key="${category}"]`);
+                if (!section) {
+                    return;
+                }
+
+                const slots = parseLocalSlots(result[localStorageKey(category)]);
+                const inputs = section.querySelectorAll('.local-input');
+
+                inputs.forEach((input) => {
+                    const index = Number(input.dataset.index);
+                    input.value = slots[index] || '';
+                });
+
+                const saveSlots = () => {
+                    const currentSlots = ['', '', ''];
+                    inputs.forEach((input) => {
+                        const index = Number(input.dataset.index);
+                        currentSlots[index] = input.value;
+                    });
+                    chrome.storage.local.set({ [localStorageKey(category)]: JSON.stringify(currentSlots) });
+                };
+
+                inputs.forEach((input) => {
+                    input.addEventListener('input', saveSlots);
+                });
+            });
+        });
+    }
+
+    initLocalInputs();
+
     const RULES_URL = "https://bodaiot.github.io/MyADSBlock/BlockADSRules.json";
 
     async function downloadFreshConfigs() {
@@ -90,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "DIEMONIC_ADS_BLOCK_banWords": JSON.stringify(data.banWords ?? []),
             "DIEMONIC_ADS_BLOCK_stopWords": JSON.stringify(data.stopWords ?? []),
             "DIEMONIC_ADS_BLOCK_elementsToHide": JSON.stringify(data.elementsToHide ?? []),
+            "DIEMONIC_ADS_BLOCK_LinksToCheck": JSON.stringify(data.LinksToCheck ?? []),
             "DIEMONIC_ADS_BLOCK_last_time_update_configs": (new Date()).toString()
         }, resolve));
     }
@@ -99,7 +172,17 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.textContent = 'Обновление...';
 
+        // Local test values are independent of the downloaded config - clearing them on every
+        // "update configs" click would defeat their whole point (testing without touching the
+        // remote file), so save and restore them across the clear.
+        const localKeysToKeep = LOCAL_TEST_CATEGORIES.map(localStorageKey);
+        const preservedLocalValues = await new Promise((resolve) => chrome.storage.local.get(localKeysToKeep, resolve));
+
         await new Promise((resolve) => chrome.storage.local.clear(resolve));
+
+        if (Object.keys(preservedLocalValues).length) {
+            await new Promise((resolve) => chrome.storage.local.set(preservedLocalValues, resolve));
+        }
 
         try {
             await downloadFreshConfigs();
@@ -113,5 +196,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn2 = document.getElementById('DIEMONIC_ADS_BLOCK_openBtn');
     btn2.addEventListener('click', () => {
         window.open("https://github.com/BodaIOT/bodaiot.github.io/blob/main/MyADSBlock/BlockADSRules.json", '_blank');
+    });
+
+    // LinksToCheck is cached the same way as the other config sections (see downloadFreshConfigs
+    // above and DownloadConfigs in content.js), but isn't rendered anywhere in this UI - it only
+    // backs this button.
+    const btn3 = document.getElementById('DIEMONIC_ADS_BLOCK_openLinksBtn');
+    btn3.addEventListener('click', () => {
+        chrome.storage.local.get(['DIEMONIC_ADS_BLOCK_LinksToCheck'], (result) => {
+            const links = parseConfigList(result.DIEMONIC_ADS_BLOCK_LinksToCheck);
+            if (!links.length) {
+                // Silent no-op otherwise - this cache key is only populated once a config
+                // refresh (button above, or content.js's periodic download) pulls it from the
+                // remote rules file, so an empty list here usually means that hasn't happened yet.
+                console.warn('DIEMONIC ADS BLOCK: LinksToCheck пуст - нажмите "Обновить конфиги" или дождитесь, пока удалённый файл конфигов будет обновлён.');
+                return;
+            }
+            links.forEach((link) => window.open(link, '_blank'));
+        });
     });
 });

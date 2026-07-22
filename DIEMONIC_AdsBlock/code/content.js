@@ -77,7 +77,8 @@ async function DownloadConfigs() {
           "DIEMONIC_ADS_BLOCK_elementsToCheckHide": JSON.stringify(data.elementsToCheckHide ?? []),
           "DIEMONIC_ADS_BLOCK_banWords": JSON.stringify(data.banWords ?? []),
           "DIEMONIC_ADS_BLOCK_stopWords": JSON.stringify(data.stopWords ?? []),
-          "DIEMONIC_ADS_BLOCK_elementsToHide": JSON.stringify(data.elementsToHide ?? [])
+          "DIEMONIC_ADS_BLOCK_elementsToHide": JSON.stringify(data.elementsToHide ?? []),
+          "DIEMONIC_ADS_BLOCK_LinksToCheck": JSON.stringify(data.LinksToCheck ?? [])
         });
 
         chrome.storage.local.get(['DIEMONIC_ADS_BLOCK_elementsToDelete', 'DIEMONIC_ADS_BLOCK_elementsToCheckDelete',
@@ -101,6 +102,53 @@ async function DownloadConfigs() {
       return null;
     })
     .catch(error => console.error('Ошибка:', error))
+}
+
+// Local test values: up to 3 extra entries per category, typed directly into the options page
+// for local testing without needing to publish/re-download the remote rules file. Stored under
+// their own "local_*" keys (separate from the downloaded config) and merged in at match time by
+// mergeLocalTestValues() below, so the remote-downloaded cache itself is never touched by them.
+const LOCAL_TEST_CATEGORIES = [
+  "elementsToDelete",
+  "elementsToCheckDelete",
+  "elementsToCheckHide",
+  "banWords",
+  "stopWords",
+  "elementsToHide"
+];
+
+function loadLocalTestValues() {
+  const defaults = {};
+  LOCAL_TEST_CATEGORIES.forEach((category) => {
+    defaults["DIEMONIC_ADS_BLOCK_local_" + category] = JSON.stringify(["", "", ""]);
+  });
+
+  chrome.storage.local.get(defaults, (result) => {
+    LOCAL_TEST_CATEGORIES.forEach((category) => {
+      window["local_" + category] = result["DIEMONIC_ADS_BLOCK_local_" + category];
+    });
+  });
+}
+
+function mergeLocalTestValues(mainValues, localRaw) {
+  let localSlots;
+  try {
+    localSlots = JSON.parse(localRaw || "[]");
+  } catch (e) {
+    localSlots = [];
+  }
+  if (!Array.isArray(localSlots)) {
+    localSlots = [];
+  }
+
+  const merged = mainValues.slice();
+  localSlots.forEach((value) => {
+    const trimmed = String(value || "").trim();
+    if (!trimmed) return; // ignore empty inputs
+    if (merged.includes(trimmed)) return; // ignore duplicates of an existing (remote) rule
+    merged.push(trimmed);
+  });
+  return merged;
 }
 
 function CheckConfigs() {
@@ -217,6 +265,8 @@ function CheckConfigs() {
         });
       }
 
+      loadLocalTestValues();
+
       chrome.storage.local.get(['DIEMONIC_ADS_BLOCK_last_time_update_configs'], (result) => {
         window.DIEMONIC_ADS_BLOCK_last_time_update_configs = result.DIEMONIC_ADS_BLOCK_last_time_update_configs;
 
@@ -244,12 +294,12 @@ function tryDeleteAds() {
 
   let elementsToDelete, elementsToCheckDelete, elementsToCheckHide, banWords, stopWords, elementsToHide;
   try {
-    elementsToDelete = JSON.parse(window.elementsToDelete);
-    elementsToCheckDelete = JSON.parse(window.elementsToCheckDelete);
-    elementsToCheckHide = JSON.parse(window.elementsToCheckHide);
-    banWords = JSON.parse(window.banWords);
-    stopWords = JSON.parse(window.stopWords);
-    elementsToHide = JSON.parse(window.elementsToHide);
+    elementsToDelete = mergeLocalTestValues(JSON.parse(window.elementsToDelete), window.local_elementsToDelete);
+    elementsToCheckDelete = mergeLocalTestValues(JSON.parse(window.elementsToCheckDelete), window.local_elementsToCheckDelete);
+    elementsToCheckHide = mergeLocalTestValues(JSON.parse(window.elementsToCheckHide), window.local_elementsToCheckHide);
+    banWords = mergeLocalTestValues(JSON.parse(window.banWords), window.local_banWords);
+    stopWords = mergeLocalTestValues(JSON.parse(window.stopWords), window.local_stopWords);
+    elementsToHide = mergeLocalTestValues(JSON.parse(window.elementsToHide), window.local_elementsToHide);
   } catch (e) {
     dLog("Ошибка разбора конфигов, пропуск прохода: " + e);
     return;
