@@ -130,7 +130,31 @@ function loadLocalTestValues() {
   });
 }
 
-function mergeLocalTestValues(mainValues, localRaw) {
+// Per-rule enable/disable toggles set on the options page (see RULE_TOGGLES_KEY there) - lets
+// a single rule be silenced for local testing without editing the downloaded config. Only
+// disabled rules are recorded, so anything not in the map is enabled by default. Loaded the same
+// lazy, best-effort way as loadLocalTestValues(): a miss on the very first tryDeleteAds() pass
+// just means toggles aren't applied yet, corrected on the next pass a moment later.
+function loadRuleToggles() {
+  chrome.storage.local.get(['DIEMONIC_ADS_BLOCK_rule_toggles'], (result) => {
+    try {
+      window.DIEMONIC_ADS_BLOCK_ruleToggles = JSON.parse(result.DIEMONIC_ADS_BLOCK_rule_toggles || '{}');
+    } catch (e) {
+      window.DIEMONIC_ADS_BLOCK_ruleToggles = {};
+    }
+  });
+}
+
+function isRuleToggleOn(category, value) {
+  const toggles = window.DIEMONIC_ADS_BLOCK_ruleToggles && window.DIEMONIC_ADS_BLOCK_ruleToggles[category];
+  return !(toggles && toggles[value] === false);
+}
+
+function filterDisabledRules(category, values) {
+  return values.filter((value) => isRuleToggleOn(category, value));
+}
+
+function parseLocalTestSlots(localRaw) {
   let localSlots;
   try {
     localSlots = JSON.parse(localRaw || "[]");
@@ -140,15 +164,44 @@ function mergeLocalTestValues(mainValues, localRaw) {
   if (!Array.isArray(localSlots)) {
     localSlots = [];
   }
+  return localSlots.map((value) => String(value || "").trim()).filter(Boolean);
+}
 
+function mergeLocalTestValues(mainValues, localRaw) {
   const merged = mainValues.slice();
-  localSlots.forEach((value) => {
-    const trimmed = String(value || "").trim();
-    if (!trimmed) return; // ignore empty inputs
+  parseLocalTestSlots(localRaw).forEach((trimmed) => {
     if (merged.includes(trimmed)) return; // ignore duplicates of an existing (remote) rule
     merged.push(trimmed);
   });
   return merged;
+}
+
+// The 3 local test slots per category aren't toggleable/numbered on the options page, so they
+// aren't included in buildRuleEntries()'s indexed rules - this pulls just the extra ones (not
+// already present in mainValues) for a separate, unnumbered pass.
+function getExtraLocalValues(mainValues, localRaw) {
+  const extras = [];
+  parseLocalTestSlots(localRaw).forEach((trimmed) => {
+    if (mainValues.includes(trimmed) || extras.includes(trimmed)) return;
+    extras.push(trimmed);
+  });
+  return extras;
+}
+
+// Builds { selector, label } entries for a selector-based rule category (elementsToDelete,
+// elementsToCheckDelete, elementsToCheckHide, elementsToHide). Disabled rules are skipped here
+// rather than filtered out of the array beforehand, so each surviving rule keeps its original
+// index - matching the #N numbering shown for that rule in the options page's table.
+function buildRuleEntries(mainValues, localRaw, category) {
+  const entries = [];
+  mainValues.forEach((selector, index) => {
+    if (!isRuleToggleOn(category, selector)) return;
+    entries.push({ selector, label: "группа " + category + ", правило #" + (index + 1) });
+  });
+  getExtraLocalValues(mainValues, localRaw).forEach((selector) => {
+    entries.push({ selector, label: "группа " + category + ", локальное тестовое правило" });
+  });
+  return entries;
 }
 
 function CheckConfigs() {
@@ -266,6 +319,7 @@ function CheckConfigs() {
       }
 
       loadLocalTestValues();
+      loadRuleToggles();
 
       chrome.storage.local.get(['DIEMONIC_ADS_BLOCK_last_time_update_configs'], (result) => {
         window.DIEMONIC_ADS_BLOCK_last_time_update_configs = result.DIEMONIC_ADS_BLOCK_last_time_update_configs;
@@ -292,38 +346,50 @@ function tryDeleteAds() {
 
   dLog("Попытка удалить рекламу. Последнее скачивание конфигов: " + window.DIEMONIC_ADS_BLOCK_last_time_update_configs);
 
-  let elementsToDelete, elementsToCheckDelete, elementsToCheckHide, banWords, stopWords, elementsToHide;
+  let elementsToDeleteMain, elementsToCheckDeleteMain, elementsToCheckHideMain, elementsToHideMain, banWords, stopWords;
   try {
-    elementsToDelete = mergeLocalTestValues(JSON.parse(window.elementsToDelete), window.local_elementsToDelete);
-    elementsToCheckDelete = mergeLocalTestValues(JSON.parse(window.elementsToCheckDelete), window.local_elementsToCheckDelete);
-    elementsToCheckHide = mergeLocalTestValues(JSON.parse(window.elementsToCheckHide), window.local_elementsToCheckHide);
-    banWords = mergeLocalTestValues(JSON.parse(window.banWords), window.local_banWords);
-    stopWords = mergeLocalTestValues(JSON.parse(window.stopWords), window.local_stopWords);
-    elementsToHide = mergeLocalTestValues(JSON.parse(window.elementsToHide), window.local_elementsToHide);
+    elementsToDeleteMain = JSON.parse(window.elementsToDelete);
+    elementsToCheckDeleteMain = JSON.parse(window.elementsToCheckDelete);
+    elementsToCheckHideMain = JSON.parse(window.elementsToCheckHide);
+    elementsToHideMain = JSON.parse(window.elementsToHide);
+    // banWords/stopWords are only ever reported by their matched word (not a rule number), so
+    // disabled ones are simply filtered out before merging in the local test values.
+    banWords = mergeLocalTestValues(filterDisabledRules("banWords", JSON.parse(window.banWords)), window.local_banWords);
+    stopWords = mergeLocalTestValues(filterDisabledRules("stopWords", JSON.parse(window.stopWords)), window.local_stopWords);
   } catch (e) {
     dLog("Ошибка разбора конфигов, пропуск прохода: " + e);
     return;
   }
 
-  // Collect matches into a Set first (per loop) so an element matched by more than one
-  // overlapping selector is only acted on once per pass.
-  const hideSet = new Set();
-  elementsToHide.forEach(element => {
-    document.querySelectorAll(element).forEach(el => hideSet.add(el));
+  const elementsToHideEntries = buildRuleEntries(elementsToHideMain, window.local_elementsToHide, "elementsToHide");
+  const elementsToDeleteEntries = buildRuleEntries(elementsToDeleteMain, window.local_elementsToDelete, "elementsToDelete");
+  const elementsToCheckDeleteEntries = buildRuleEntries(elementsToCheckDeleteMain, window.local_elementsToCheckDelete, "elementsToCheckDelete");
+  const elementsToCheckHideEntries = buildRuleEntries(elementsToCheckHideMain, window.local_elementsToCheckHide, "elementsToCheckHide");
+
+  // Collect matches into a Map first (per loop) so an element matched by more than one
+  // overlapping selector is only acted on once per pass - whichever rule matched first is the
+  // one credited in the log.
+  const hideMap = new Map();
+  elementsToHideEntries.forEach(({ selector, label }) => {
+    document.querySelectorAll(selector).forEach(el => {
+      if (!hideMap.has(el)) hideMap.set(el, label);
+    });
   });
-  hideSet.forEach(el => {
+  hideMap.forEach((label, el) => {
     if (safeHide(el, "elementsToHide")) {
-      dLog("Скрыт элемент " + el);
+      dLog(label + ": скрыт элемент " + el);
     }
   });
 
-  const deleteSet = new Set();
-  elementsToDelete.forEach(element => {
-    document.querySelectorAll(element).forEach(el => deleteSet.add(el));
+  const deleteMap = new Map();
+  elementsToDeleteEntries.forEach(({ selector, label }) => {
+    document.querySelectorAll(selector).forEach(el => {
+      if (!deleteMap.has(el)) deleteMap.set(el, label);
+    });
   });
-  deleteSet.forEach(el => {
+  deleteMap.forEach((label, el) => {
     if (safeRemove(el, "elementsToDelete")) {
-      dLog("Удален элемент " + el);
+      dLog(label + ": удален элемент " + el);
     }
   });
 
@@ -331,32 +397,38 @@ function tryDeleteAds() {
   // elementsToCheckDelete removes the match, elementsToCheckHide only hides it — used for
   // elements inside virtualized/masonry grids (e.g. Yandex Images cards) where physically
   // removing the node can desync the host page's own React tree during scroll and crash it.
-  const checkDeleteSet = new Set();
-  elementsToCheckDelete.forEach(element => {
-    document.querySelectorAll(element).forEach(el => checkDeleteSet.add(el));
+  const checkDeleteMap = new Map();
+  elementsToCheckDeleteEntries.forEach(({ selector, label }) => {
+    document.querySelectorAll(selector).forEach(el => {
+      if (!checkDeleteMap.has(el)) checkDeleteMap.set(el, label);
+    });
   });
-  checkDeleteSet.forEach(el => {
+  checkDeleteMap.forEach((label, el) => {
     if (!el.isConnected) return;
     const content = el.innerHTML.toLowerCase();
     if (stopWords.some(word => content.includes(word.toLowerCase()))) return;
-    if (banWords.some(word => content.includes(word.toLowerCase()))) {
+    const matchedBanWord = banWords.find(word => content.includes(word.toLowerCase()));
+    if (matchedBanWord) {
       if (safeRemove(el, "elementsToCheckDelete")) {
-        dLog("По правилу поиска (удаление) удален элемент " + content);
+        dLog(label + ", бан-слово \"" + matchedBanWord + "\": удален элемент " + content);
       }
     }
   });
 
-  const checkHideSet = new Set();
-  elementsToCheckHide.forEach(element => {
-    document.querySelectorAll(element).forEach(el => checkHideSet.add(el));
+  const checkHideMap = new Map();
+  elementsToCheckHideEntries.forEach(({ selector, label }) => {
+    document.querySelectorAll(selector).forEach(el => {
+      if (!checkHideMap.has(el)) checkHideMap.set(el, label);
+    });
   });
-  checkHideSet.forEach(el => {
+  checkHideMap.forEach((label, el) => {
     if (!el.isConnected) return;
     const content = el.innerHTML.toLowerCase();
     if (stopWords.some(word => content.includes(word.toLowerCase()))) return;
-    if (banWords.some(word => content.includes(word.toLowerCase()))) {
+    const matchedBanWord = banWords.find(word => content.includes(word.toLowerCase()));
+    if (matchedBanWord) {
       if (safeHide(el, "elementsToCheckHide")) {
-        dLog("По правилу поиска (скрытие) скрыт элемент " + content);
+        dLog(label + ", бан-слово \"" + matchedBanWord + "\": скрыт элемент " + content);
       }
     }
   });

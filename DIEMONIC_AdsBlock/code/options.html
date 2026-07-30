@@ -115,6 +115,7 @@
         font-weight: normal;
         position: sticky;
         top: 0;
+        z-index: 2;
     }
 
     tr:nth-child(even) {
@@ -193,6 +194,64 @@
         outline: none;
         border-color: #2f4dd3;
     }
+
+    th:last-child, td:last-child {
+        width: 50px;
+        text-align: center;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 18px;
+        vertical-align: middle;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555;
+        transition: background-color 0.2s;
+        border-radius: 18px;
+    }
+
+    .toggle-slider::before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 2px;
+        bottom: 2px;
+        background-color: #fff;
+        transition: transform 0.2s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background-color: #2f4dd3;
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(16px);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
 </style>
 </head>
 <body>
@@ -219,11 +278,17 @@
 
     <div class="container">
         <div class="card">
-            <h2>elementsToDelete</h2>
+            <div class="card-header">
+                <h2>elementsToDelete</h2>
+                <label class="toggle-switch" title="Включить/выключить всю группу">
+                    <input type="checkbox" class="master-toggle" data-category="elementsToDelete" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <h4>Эти элементы удаляются из страницы сразу, без каких-либо проверок.</h4>
             <div class="card-scroll">
                 <table>
-                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <thead><tr><th>#</th><th>Селектор</th><th>Вкл</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToDelete"></tbody>
                 </table>
             </div>
@@ -238,11 +303,17 @@
         </div>
 
         <div class="card">
-            <h2>elementsToCheckDelete</h2>
+            <div class="card-header">
+                <h2>elementsToCheckDelete</h2>
+                <label class="toggle-switch" title="Включить/выключить всю группу">
+                    <input type="checkbox" class="master-toggle" data-category="elementsToCheckDelete" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <h4>Эти элементы проверяются: если внутри встречается одно из banWords и нет ни одного stopWords — элемент удаляется.</h4>
             <div class="card-scroll">
                 <table>
-                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <thead><tr><th>#</th><th>Селектор</th><th>Вкл</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToCheckDelete"></tbody>
                 </table>
             </div>
@@ -257,11 +328,17 @@
         </div>
 
         <div class="card">
-            <h2>elementsToCheckHide</h2>
+            <div class="card-header">
+                <h2>elementsToCheckHide</h2>
+                <label class="toggle-switch" title="Включить/выключить всю группу">
+                    <input type="checkbox" class="master-toggle" data-category="elementsToCheckHide" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <h4>Проверяются так же, как elementsToCheckDelete (через те же banWords/stopWords), но при совпадении не удаляются, а только скрываются (display: none) — используется для элементов внутри "живых" сеток, где удаление узла может сломать рендер страницы.</h4>
             <div class="card-scroll">
                 <table>
-                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <thead><tr><th>#</th><th>Селектор</th><th>Вкл</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToCheckHide"></tbody>
                 </table>
             </div>
@@ -276,11 +353,17 @@
         </div>
 
         <div class="card">
-            <h2>banWords</h2>
+            <div class="card-header">
+                <h2>banWords</h2>
+                <label class="toggle-switch" title="Включить/выключить всю группу">
+                    <input type="checkbox" class="master-toggle" data-category="banWords" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <h4>Общий список для elementsToCheckDelete и elementsToCheckHide: если внутри найденного элемента встречается любое из этих слов — он считается рекламой.</h4>
             <div class="card-scroll">
                 <table>
-                    <thead><tr><th>#</th><th>Слово</th></tr></thead>
+                    <thead><tr><th>#</th><th>Слово</th><th>Вкл</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_banWords"></tbody>
                 </table>
             </div>
@@ -295,11 +378,17 @@
         </div>
 
         <div class="card">
-            <h2>stopWords</h2>
+            <div class="card-header">
+                <h2>stopWords</h2>
+                <label class="toggle-switch" title="Включить/выключить всю группу">
+                    <input type="checkbox" class="master-toggle" data-category="stopWords" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <h4>Общий список для elementsToCheckDelete и elementsToCheckHide: если встречается любое из этих слов — элемент не трогается, даже если совпал с banWords.</h4>
             <div class="card-scroll">
                 <table>
-                    <thead><tr><th>#</th><th>Слово</th></tr></thead>
+                    <thead><tr><th>#</th><th>Слово</th><th>Вкл</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_stopWords"></tbody>
                 </table>
             </div>
@@ -314,11 +403,17 @@
         </div>
 
         <div class="card">
-            <h2>elementsToHide</h2>
+            <div class="card-header">
+                <h2>elementsToHide</h2>
+                <label class="toggle-switch" title="Включить/выключить всю группу">
+                    <input type="checkbox" class="master-toggle" data-category="elementsToHide" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
             <h4>Эти элементы всегда только скрываются (display: none), без проверки banWords/stopWords.</h4>
             <div class="card-scroll">
                 <table>
-                    <thead><tr><th>#</th><th>Селектор</th></tr></thead>
+                    <thead><tr><th>#</th><th>Селектор</th><th>Вкл</th></tr></thead>
                     <tbody id="DIEMONIC_ADS_BLOCK_elementsToHide"></tbody>
                 </table>
             </div>

@@ -37,6 +37,7 @@
         "[data-apiary-widget-name*='@monetize/HeroBannerCarousel']",
         "[data-apiary-widget-name*='monetize/HeroBannersCarousel']",
         "[data-apiary-widget-name*='monetize/HeroCarousel']",
+        "[data-apiary-widget-name*='@monetize/HeroSlideshow']",
         "[data-name*='adWrapper']"
     ],
     "elementsToCheckDelete": [
@@ -71,12 +72,16 @@
         "futuris_search"
     ],
     "elementsToHide": [
+        "[class*='CommercialProducts-Adv']",
         "[data-auto*='creativeBanner']",
         "[data-apiary-widget-name*='marketfront/RecomMediaAdv']",
         "[data-apiary-widget-name*='@marketfront/RecomMediaAdv']"
     ],
     "LinksToCheck": [
         "https://yandex.ru/images/search?from=tabbar&img_url=https%3A%2F%2Fdaniland.ru%2Fupload%2Fuf%2Faac%2F67wzlm860qe2lcqtf92hxrn4ntn6rnb2%2F161007-0-1.webp&lr=120590&pos=0&rpt=simage&text=пистолет%20игрушечный",
-        "https://yandex.ru/search/?text=в+какой+университет+поступить&lr=120590&clid=2270455&win=609&src=suggest_B"
+        "https://yandex.ru/search/?text=в+какой+университет+поступить&lr=120590&clid=2270455&win=609&src=suggest_B",
+        "https://yandex.ru/images/search?img_url=https%3A%2F%2Fi.pinimg.com%2Foriginals%2F88%2F1d%2F9b%2F881d9bc364bd9c87aebd5885c59d8fc4.jpg%3Fnii%3Dt&lr=120590&pos=0&rpt=simage&source=serp&stype=image&text=котики",
+        "https://market.yandex.ru/",
+        "https://yandex.ru/images/search?from=tabbar&img_url=https%3A%2F%2Fmeridian-opt.ru%2Fimages%2Fstories%2Fvirtuemart%2Fproduct%2F36745---_1.JPEG&lr=2&pos=6&rpt=simage&text=зеркало%20пластмассовое"
     ]
 }

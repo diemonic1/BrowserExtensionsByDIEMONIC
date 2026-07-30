@@ -36,21 +36,104 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderConfigTable(tbodyId, items) {
+    // Per-rule enable/disable toggles, for local testing (silencing one rule without editing the
+    // downloaded config or waiting for a remote publish). Stored as one JSON object keyed by
+    // category then rule text; only *disabled* rules are recorded (value === false) so a rule
+    // is enabled by default the moment it appears, with nothing to migrate.
+    const RULE_TOGGLES_KEY = 'DIEMONIC_ADS_BLOCK_rule_toggles';
+    let ruleToggles = {};
+
+    function isRuleEnabled(category, value) {
+        return !(ruleToggles[category] && ruleToggles[category][value] === false);
+    }
+
+    function setRuleEnabled(category, value, enabled) {
+        if (!ruleToggles[category]) {
+            ruleToggles[category] = {};
+        }
+        if (enabled) {
+            delete ruleToggles[category][value];
+        } else {
+            ruleToggles[category][value] = false;
+        }
+        chrome.storage.local.set({ [RULE_TOGGLES_KEY]: JSON.stringify(ruleToggles) });
+    }
+
+    function setGroupEnabled(category, items, enabled) {
+        if (!ruleToggles[category]) {
+            ruleToggles[category] = {};
+        }
+        items.forEach((item) => {
+            if (enabled) {
+                delete ruleToggles[category][item];
+            } else {
+                ruleToggles[category][item] = false;
+            }
+        });
+        chrome.storage.local.set({ [RULE_TOGGLES_KEY]: JSON.stringify(ruleToggles) });
+    }
+
+    // Tracks each category's currently rendered items so the master switch (set all at once)
+    // and re-renders after using it don't need the config re-read from storage.
+    const categoryItems = {};
+
+    function categoryToTbodyId(category) {
+        return 'DIEMONIC_ADS_BLOCK_' + category;
+    }
+
+    function updateMasterToggleUI(category) {
+        const masterCheckbox = document.querySelector(`.master-toggle[data-category="${category}"]`);
+        if (!masterCheckbox) {
+            return;
+        }
+        const items = categoryItems[category] || [];
+        masterCheckbox.checked = items.every((item) => isRuleEnabled(category, item));
+    }
+
+    function renderConfigTable(tbodyId, items, category) {
+        categoryItems[category] = items;
+
         const tbody = document.getElementById(tbodyId);
         if (!tbody) {
             return;
         }
 
         if (!items.length) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="2">Пусто</td></tr>';
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="3">Пусто</td></tr>';
+            updateMasterToggleUI(category);
             return;
         }
 
         tbody.innerHTML = items
-            .map((item, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(item)}</td></tr>`)
+            .map((item, index) => {
+                const checked = isRuleEnabled(category, item) ? 'checked' : '';
+                return `<tr><td>${index + 1}</td><td>${escapeHtml(item)}</td><td>`
+                    + `<label class="toggle-switch">`
+                    + `<input type="checkbox" class="rule-toggle" data-index="${index}" ${checked}>`
+                    + `<span class="toggle-slider"></span>`
+                    + `</label></td></tr>`;
+            })
             .join('');
+
+        tbody.querySelectorAll('.rule-toggle').forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                const index = Number(checkbox.dataset.index);
+                setRuleEnabled(category, items[index], checkbox.checked);
+                updateMasterToggleUI(category);
+            });
+        });
+
+        updateMasterToggleUI(category);
     }
+
+    document.querySelectorAll('.master-toggle').forEach((masterCheckbox) => {
+        masterCheckbox.addEventListener('change', () => {
+            const category = masterCheckbox.dataset.category;
+            const items = categoryItems[category] || [];
+            setGroupEnabled(category, items, masterCheckbox.checked);
+            renderConfigTable(categoryToTbodyId(category), items, category);
+        });
+    });
 
     function escapeHtml(value) {
         return String(value)
@@ -68,9 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
         'DIEMONIC_ADS_BLOCK_elementsToHide'
     ];
 
-    chrome.storage.local.get(CONFIG_KEYS, (result) => {
+    chrome.storage.local.get(CONFIG_KEYS.concat([RULE_TOGGLES_KEY]), (result) => {
+        try {
+            ruleToggles = JSON.parse(result[RULE_TOGGLES_KEY] || '{}');
+        } catch (e) {
+            ruleToggles = {};
+        }
+
         CONFIG_KEYS.forEach((key) => {
-            renderConfigTable(key, parseConfigList(result[key]));
+            const category = key.replace('DIEMONIC_ADS_BLOCK_', '');
+            renderConfigTable(key, parseConfigList(result[key]), category);
         });
     });
 
