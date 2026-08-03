@@ -111,6 +111,60 @@ function proceedVideoBookmark(video, deleteYears, addSecondsToURL) {
   });
 }
 
+// Same video-detection approach as createYoutubeBookmark() above (plain <video>, plus the
+// vkvideo shadow-root polling case), factored out so the "refresh page, clearing RAM" context
+// menu action can locate the playing video without duplicating the bookmark flow itself.
+function findVideoForReload(onFound) {
+  const video = document.querySelector('video');
+
+  if (!video && window.location.href.includes('vkvideo')) {
+    const interval = setInterval(() => {
+      const host = document.querySelector('.shadow-root-container');
+      if (!host) return;
+
+      if (host.shadowRoot) {
+        const vkVideo = host.shadowRoot.querySelector('video');
+        if (vkVideo) {
+          clearInterval(interval);
+          onFound(vkVideo);
+        }
+      }
+    }, 300);
+  } else if (video) {
+    onFound(video);
+  }
+}
+
+// Mirrors proceedVideoBookmark()'s time/URL logic (same videoOffset setting, same "?t=" param),
+// but instead of creating a bookmark it hands the timestamped URL to background.js so it can
+// reopen the tab at that moment - see the "refresh-the-page-by-clearing-the-RAM" context menu.
+function sendCurrentVideoTimeForReload() {
+  findVideoForReload((video) => {
+    getSettings((settings) => {
+      try {
+        const currentTime = Math.floor(video.currentTime);
+        const duration = video.duration;
+
+        if (!currentTime || !duration) {
+          return;
+        }
+
+        const savedTime = Math.max(0, currentTime - settings.videoOffset);
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('t', savedTime);
+
+        chrome.runtime.sendMessage({
+          action: 'reloadWithVideoTime',
+          url: url.toString()
+        });
+      } catch (error) {
+        console.log('Не удалось получить время видео для перезагрузки:', error);
+      }
+    });
+  });
+}
+
 function getSettings(callback) {
   chrome.storage.sync.get({
     videoOffset: DEFAULT_VIDEO_OFFSET,
@@ -205,5 +259,7 @@ const formatTime = (t) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "runСreateYoutubeBookmark") {
     createYoutubeBookmark();
+  } else if (message.action === "getCurrentVideoTimeForReload") {
+    sendCurrentVideoTimeForReload();
   }
 });

@@ -6,11 +6,11 @@
       "matches": [ "<all_urls>" ]
    } ],
    "description": "Save a bookmark with any video",
-   "permissions": ["bookmarks", "storage"],
+   "permissions": ["bookmarks", "storage", "contextMenus"],
    "host_permissions": [ "<all_urls>" ],
    "manifest_version": 3,
    "name": "D!EMONIC | SaveAnyVideoBookmark",
-   "version": "1.0.3",
+   "version": "1.0.4",
    "background": {
       "service_worker": "background.js"
    },

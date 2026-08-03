@@ -32,6 +32,12 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 //#endregion
 
+// Holds each tab's freshly computed "resume here" URL just long enough to hand it off between
+// content.js's async video-time capture (findVideoForReload() can poll for a while on vkvideo)
+// and the reload below that consumes it - see the "refresh-the-page-by-clearing-the-RAM" context
+// menu action.
+const pendingVideoTimeUrls = new Map();
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'createBookmark') {
         getSettings((settings) => {
@@ -42,6 +48,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     url: message.url
                 });
             });
+        });
+    } else if (message.action === 'reloadWithVideoTime') {
+        const tabId = sender.tab && sender.tab.id;
+        if (tabId == null) return;
+
+        pendingVideoTimeUrls.set(tabId, message.url);
+
+        // Navigating the tab to the timestamped URL both frees the old page's memory (video
+        // buffers, DOM, JS heap - the whole point of "clearing RAM") and reopens it at the same
+        // moment the video was at, since the URL carries that moment via the "t" param.
+        chrome.tabs.update(tabId, { url: pendingVideoTimeUrls.get(tabId) }, () => {
+            pendingVideoTimeUrls.delete(tabId);
         });
     }
 });
@@ -89,4 +107,20 @@ function getOrCreateFolder(name, callback) {
 
 chrome.action.onClicked.addListener((tab) => {
     chrome.tabs.sendMessage(tab.id, { action: "runСreateYoutubeBookmark" });
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "refresh-the-page-by-clearing-the-RAM",
+        title: "Обновить страницу, очистив ОЗУ",
+        contexts: ["action"]
+    });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "refresh-the-page-by-clearing-the-RAM") {
+        // Kicks off content.js's findVideoForReload() -> sendCurrentVideoTimeForReload(), which
+        // reports back via the 'reloadWithVideoTime' message handled above.
+        chrome.tabs.sendMessage(tab.id, { action: "getCurrentVideoTimeForReload" });
+    }
 });
