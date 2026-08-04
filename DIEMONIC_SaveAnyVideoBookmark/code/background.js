@@ -123,4 +123,4 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         // reports back via the 'reloadWithVideoTime' message handled above.
         chrome.tabs.sendMessage(tab.id, { action: "getCurrentVideoTimeForReload" });
     }
-});
+}); 
