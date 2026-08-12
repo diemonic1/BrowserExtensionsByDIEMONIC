@@ -3,7 +3,7 @@
     "name": "__MSG_extName__",
     "description": "__MSG_extDescription__",
     "default_locale": "en",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "permissions": [ "storage" ],
     "host_permissions": [ "https://www.youtube.com/*" ],
     "content_scripts": [ {
@@ -16,6 +16,7 @@
             "modules/mediaListener.js",
             "modules/sidebarButtons.js",
             "modules/viewProgress.js",
+            "modules/relatedSidebar.js",
             "main.js"
         ]
     } ],

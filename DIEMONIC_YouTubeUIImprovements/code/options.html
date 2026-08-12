@@ -142,6 +142,26 @@
         </div>
 
         <div class="card">
+            <h2 data-i18n="relatedSidebarCardTitle"></h2>
+
+            <div class="settings-section">
+                <label class="settings-label">
+                    <input type="checkbox" id="moduleRelatedSidebarEnabled" />
+                    <span data-i18n="moduleRelatedSidebarLabel"></span>
+                </label>
+            </div>
+
+            <div class="settings-section">
+                <label for="relatedSidebarWidthInput" style="display: block; font-size: 14px;" data-i18n="relatedSidebarWidthLabel"></label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="range" id="relatedSidebarWidthInput" min="280" max="550" step="1" style="flex: 1; accent-color: #2f4dd3;" />
+                    <span id="relatedSidebarWidthValue" style="min-width: 52px; text-align: right; font-family: monospace;"></span>
+                </div>
+                <h4 data-i18n="relatedSidebarWidthHint"></h4>
+            </div>
+        </div>
+
+        <div class="card">
             <h2 data-i18n="loggingCardTitle"></h2>
 
             <div class="settings-section">

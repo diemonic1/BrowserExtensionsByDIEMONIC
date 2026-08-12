@@ -3,10 +3,12 @@ const DEFAULT_SETTINGS = {
     moduleMediaListenerEnabled: true,
     moduleSidebarButtonsEnabled: true,
     moduleViewProgressEnabled: true,
+    moduleRelatedSidebarEnabled: false,
     showDownloadButton: true,
     showPreviewButton: true,
     protocol: "ytDlpWebExtension://",
     enableLogs: true,
+    relatedSidebarWidth: 450,
 };
 
 chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
@@ -26,5 +28,8 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
     }
     if (settings.moduleViewProgressEnabled && modules.viewProgress) {
         modules.viewProgress.init(settings);
+    }
+    if (settings.moduleRelatedSidebarEnabled && modules.relatedSidebar) {
+        modules.relatedSidebar.init(settings);
     }
 });

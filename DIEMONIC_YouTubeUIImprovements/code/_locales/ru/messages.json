@@ -9,6 +9,11 @@
     "moduleSidebarButtonsLabel": { "message": "Кнопки в боковом меню" },
     "moduleViewProgressLabel": { "message": "Прогресс просмотра видео" },
 
+    "relatedSidebarCardTitle": { "message": "Боковая панель \"Далее\"" },
+    "moduleRelatedSidebarLabel": { "message": "Сжимать боковую панель с рекомендациями (Restore Related sidebar layout)" },
+    "relatedSidebarWidthLabel": { "message": "Ширина боковой панели" },
+    "relatedSidebarWidthHint": { "message": "Насколько сильно сжимается панель с рекомендациями справа от видео. Меньше значение — уже панель." },
+
     "loggingCardTitle": { "message": "Логирование" },
     "enableLogsLabel": { "message": "Включить логи расширения в консоль браузера" },
 

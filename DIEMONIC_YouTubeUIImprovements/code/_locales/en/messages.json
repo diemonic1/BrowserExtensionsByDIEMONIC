@@ -9,6 +9,11 @@
     "moduleSidebarButtonsLabel": { "message": "Sidebar shortcut buttons" },
     "moduleViewProgressLabel": { "message": "Watch progress display" },
 
+    "relatedSidebarCardTitle": { "message": "Related sidebar" },
+    "moduleRelatedSidebarLabel": { "message": "Shrink the Related recommendations sidebar (Restore Related sidebar layout)" },
+    "relatedSidebarWidthLabel": { "message": "Sidebar width" },
+    "relatedSidebarWidthHint": { "message": "How much the Related sidebar next to the video is compressed. Lower value - narrower sidebar." },
+
     "loggingCardTitle": { "message": "Logging" },
     "enableLogsLabel": { "message": "Enable extension logs in the browser console" },
 
