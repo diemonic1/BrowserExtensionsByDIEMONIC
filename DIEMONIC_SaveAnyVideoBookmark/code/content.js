@@ -37,7 +37,7 @@ function createYoutubeBookmark() {
 }
 
 function proceedVideoBookmark(video, deleteYears, addSecondsToURL) {
-  const maxLengthTitle = 40;
+  const maxLengthTitle = 38;
 
   getSettings((settings) => {
     try {
