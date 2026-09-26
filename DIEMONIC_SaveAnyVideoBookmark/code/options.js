@@ -1,12 +1,18 @@
 const DEFAULT_SETTINGS = {
     videoOffset: 0,
     folderName: 'Смотреть',
-    toastLeftOffset: '23.8%'
+    toastLeftOffset: '23.8%',
+    maxTitleLength: 38
 };
+
+const MIN_MAX_TITLE_LENGTH = 15;
+const MAX_MAX_TITLE_LENGTH = 48;
 
 const form = document.getElementById('settings-form');
 const videoOffsetInput = document.getElementById('video-offset');
 const videoOffsetValue = document.getElementById('video-offset-value');
+const maxTitleLengthInput = document.getElementById('max-title-length');
+const maxTitleLengthValue = document.getElementById('max-title-length-value');
 const folderNameInput = document.getElementById('folder-name');
 const toastLeftOffsetInput = document.getElementById('toast-left-offset');
 const statusNode = document.getElementById('status');
@@ -26,11 +32,17 @@ function initialize() {
         videoOffsetInput.value = String(normalizedSettings.videoOffset);
         folderNameInput.value = normalizedSettings.folderName;
         toastLeftOffsetInput.value = normalizedSettings.toastLeftOffset;
+        maxTitleLengthInput.value = String(normalizedSettings.maxTitleLength);
         syncOffsetLabel(normalizedSettings.videoOffset);
+        syncMaxTitleLengthLabel(normalizedSettings.maxTitleLength);
     });
 
     videoOffsetInput.addEventListener('input', () => {
         syncOffsetLabel(videoOffsetInput.value);
+    });
+
+    maxTitleLengthInput.addEventListener('input', () => {
+        syncMaxTitleLengthLabel(maxTitleLengthInput.value);
     });
 
     form.addEventListener('submit', (event) => {
@@ -39,14 +51,17 @@ function initialize() {
         const nextSettings = normalizeSettings({
             videoOffset: videoOffsetInput.value,
             folderName: folderNameInput.value,
-            toastLeftOffset: toastLeftOffsetInput.value
+            toastLeftOffset: toastLeftOffsetInput.value,
+            maxTitleLength: maxTitleLengthInput.value
         });
 
         chrome.storage.sync.set(nextSettings, () => {
             videoOffsetInput.value = String(nextSettings.videoOffset);
             folderNameInput.value = nextSettings.folderName;
             toastLeftOffsetInput.value = nextSettings.toastLeftOffset;
+            maxTitleLengthInput.value = String(nextSettings.maxTitleLength);
             syncOffsetLabel(nextSettings.videoOffset);
+            syncMaxTitleLengthLabel(nextSettings.maxTitleLength);
             showStatus('Settings saved');
         });
     });
@@ -56,8 +71,19 @@ function normalizeSettings(settings) {
     return {
         videoOffset: clampOffset(settings.videoOffset),
         folderName: normalizeFolderName(settings.folderName),
-        toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset)
+        toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset),
+        maxTitleLength: clampMaxTitleLength(settings.maxTitleLength)
     };
+}
+
+function clampMaxTitleLength(value) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return DEFAULT_SETTINGS.maxTitleLength;
+    }
+
+    return Math.min(MAX_MAX_TITLE_LENGTH, Math.max(MIN_MAX_TITLE_LENGTH, Math.floor(numericValue)));
 }
 
 function clampOffset(value) {
@@ -103,6 +129,10 @@ function normalizeToastLeftOffset(value) {
 
 function syncOffsetLabel(value) {
     videoOffsetValue.value = `${value}s`;
+}
+
+function syncMaxTitleLengthLabel(value) {
+    maxTitleLengthValue.value = String(value);
 }
 
 function showStatus(message) {

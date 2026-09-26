@@ -1,5 +1,8 @@
 const DEFAULT_VIDEO_OFFSET = 0;
 const DEFAULT_TOAST_LEFT_OFFSET = '23.8%';
+const DEFAULT_MAX_TITLE_LENGTH = 38;
+const MIN_MAX_TITLE_LENGTH = 15;
+const MAX_MAX_TITLE_LENGTH = 48;
 
 applyToastOffset();
 
@@ -37,10 +40,9 @@ function createYoutubeBookmark() {
 }
 
 function proceedVideoBookmark(video, deleteYears, addSecondsToURL) {
-  const maxLengthTitle = 38;
-
   getSettings((settings) => {
     try {
+      const maxLengthTitle = settings.maxTitleLength;
       const currentTime = Math.floor(video.currentTime);
       const duration = video.duration;
 
@@ -168,11 +170,13 @@ function sendCurrentVideoTimeForReload() {
 function getSettings(callback) {
   chrome.storage.sync.get({
     videoOffset: DEFAULT_VIDEO_OFFSET,
-    toastLeftOffset: DEFAULT_TOAST_LEFT_OFFSET
+    toastLeftOffset: DEFAULT_TOAST_LEFT_OFFSET,
+    maxTitleLength: DEFAULT_MAX_TITLE_LENGTH
   }, (settings) => {
     callback({
       videoOffset: clampOffset(settings.videoOffset),
-      toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset)
+      toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset),
+      maxTitleLength: clampMaxTitleLength(settings.maxTitleLength)
     });
   });
 }
@@ -196,6 +200,16 @@ function clampOffset(value) {
   }
 
   return Math.min(3, Math.max(0, Math.floor(numericValue)));
+}
+
+function clampMaxTitleLength(value) {
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return DEFAULT_MAX_TITLE_LENGTH;
+  }
+
+  return Math.min(MAX_MAX_TITLE_LENGTH, Math.max(MIN_MAX_TITLE_LENGTH, Math.floor(numericValue)));
 }
 
 function normalizeToastLeftOffset(value) {

@@ -10,7 +10,7 @@
    "host_permissions": [ "<all_urls>" ],
    "manifest_version": 3,
    "name": "D!EMONIC | SaveAnyVideoBookmark",
-   "version": "1.0.5",
+   "version": "1.0.6",
    "background": {
       "service_worker": "background.js"
    },
