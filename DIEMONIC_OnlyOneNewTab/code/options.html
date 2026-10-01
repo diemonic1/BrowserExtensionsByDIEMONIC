@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Only One New Tab Settings</title>
+  <link rel="stylesheet" href="options.css">
+  <script src="popup-mode.js"></script>
+</head>
+<body>
+  <main class="options-shell">
+    <section class="options-card">
+      <div class="options-heading">
+        <p class="eyebrow">Extension Settings</p>
+        <h1>Only One New Tab</h1>
+        <p class="subtitle">When a tab with a listed URL opens, older tabs with the same URL are closed automatically.</p>
+      </div>
+
+      <div class="settings-form">
+        <label class="field field-toggle" for="enabled">
+          <span class="field-text">
+            <span class="field-title">Enabled</span>
+            <span class="field-description">Automatically close older duplicate tabs.</span>
+          </span>
+          <input id="enabled" type="checkbox" class="switch">
+        </label>
+
+        <label class="field field-toggle" for="close-new-tab-pages">
+          <span class="field-text">
+            <span class="field-title">Only one new tab page</span>
+            <span class="field-description">Also treat browser new tab pages (chrome://newtab, edge://newtab, browser://newtab, vivaldi://startpage…) and tabs without a URL as duplicates of each other.</span>
+          </span>
+          <input id="close-new-tab-pages" type="checkbox" class="switch">
+        </label>
+
+        <div class="field">
+          <span class="field-title">URLs</span>
+          <span class="field-description">
+            <code>github.com</code> — the whole site with subdomains.
+            <code>github.com/user</code> — only this path and deeper.
+            <code>*</code> — any characters, e.g. <code>*.google.com/maps*</code>.
+          </span>
+
+          <form id="add-form" class="add-row">
+            <input id="pattern-input" type="text" placeholder="github.com" autocomplete="off" spellcheck="false">
+            <button type="submit">Add</button>
+          </form>
+          <button id="add-current" type="button" class="secondary">Add current tab's site</button>
+
+          <ul id="pattern-list" class="pattern-list"></ul>
+          <p id="empty-list" class="empty-list">No URLs added yet.</p>
+        </div>
+
+        <div class="actions">
+          <button id="close-now" type="button" class="secondary">Close duplicates now</button>
+          <span id="status" class="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="matcher.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

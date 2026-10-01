@@ -1,0 +1,44 @@
+{
+   "manifest_version": 3,
+   "name": "D!EMONIC | Only One New Tab",
+   "description": "Keeps only one tab for the URLs you choose: when a duplicate opens, the older tabs are closed",
+   "version": "1.0.0",
+   "permissions": ["tabs", "storage"],
+   "background": {
+      "service_worker": "background.js",
+      "scripts": ["matcher.js", "background.js"]
+   },
+   "browser_specific_settings": {
+      "gecko": {
+         "id": "only-one-new-tab@diemonic",
+         "strict_min_version": "121.0",
+         "data_collection_permissions": { "required": ["none"] }
+      }
+   },
+   "icons": {
+      "16": "icon/v1/16.png",
+      "32": "icon/v1/32.png",
+      "48": "icon/v1/48.png",
+      "64": "icon/v1/64.png",
+      "128": "icon/v1/128.png",
+      "256": "icon/v1/256.png",
+      "512": "icon/v1/512.png"
+   },
+   "action": {
+      "default_title": "Only One New Tab",
+      "default_popup": "options.html?popup=1",
+      "default_icon": {
+         "16": "icon/v1/16.png",
+         "32": "icon/v1/32.png",
+         "48": "icon/v1/48.png",
+         "64": "icon/v1/64.png",
+         "128": "icon/v1/128.png",
+         "256": "icon/v1/256.png",
+         "512": "icon/v1/512.png"
+      }
+   },
+   "options_ui": {
+      "page": "options.html",
+      "open_in_tab": true
+   }
+}

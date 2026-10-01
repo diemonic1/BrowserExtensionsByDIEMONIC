@@ -1,0 +1,370 @@
+:root {
+  color-scheme: dark;
+  --bg: #1e1e1e;
+  --bg-elevated: #252526;
+  --panel: rgba(37, 37, 38, 0.92);
+  --panel-border: #3c3c3c;
+  --panel-shadow: rgba(0, 0, 0, 0.45);
+  --text: #d4d4d4;
+  --muted: #9da0a6;
+  --accent: #0e639c;
+  --accent-hover: #1177bb;
+  --accent-soft: rgba(14, 99, 156, 0.16);
+  --input-bg: #181818;
+  --input-border: #4b4b4b;
+  --success: #89d185;
+  --error: #f48771;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(14, 99, 156, 0.22), transparent 38%),
+    linear-gradient(180deg, #252526 0%, #1e1e1e 55%, #181818 100%);
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.options-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.options-card {
+  width: min(100%, 720px);
+  padding: 28px;
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: 0 24px 70px var(--panel-shadow);
+  backdrop-filter: blur(10px);
+}
+
+.options-heading {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #75beff;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  max-width: 52ch;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.settings-form {
+  display: grid;
+  gap: 20px;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+}
+
+.field-toggle {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.field-text {
+  display: grid;
+  gap: 6px;
+}
+
+.field-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.field-description {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--input-bg);
+  color: #75beff;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.92em;
+}
+
+/* Toggle switch */
+.switch {
+  appearance: none;
+  position: relative;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  background: var(--input-bg);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.switch:checked {
+  border-color: var(--accent-hover);
+  background: var(--accent);
+}
+
+.switch:checked::after {
+  transform: translateX(20px);
+  background: #ffffff;
+}
+
+.switch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 11px 14px;
+  font: inherit;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+input[type="text"]:focus {
+  outline: none;
+}
+
+input[type="text"]:focus-visible {
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.pattern-list {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pattern-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+}
+
+.pattern-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.empty-list {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 1px solid #1177bb;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--accent-hover), var(--accent));
+  color: #ffffff;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button.secondary {
+  justify-self: start;
+  border-color: var(--input-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-weight: 500;
+}
+
+button.secondary:hover {
+  border-color: var(--accent-hover);
+  filter: none;
+}
+
+.remove-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.remove-button:hover {
+  border-color: var(--error);
+  color: var(--error);
+  filter: none;
+}
+
+.status {
+  min-height: 20px;
+  color: var(--success);
+}
+
+.status.error {
+  color: var(--error);
+}
+
+/* Popup mode: options.html?popup=1 */
+html.popup body {
+  width: 380px;
+  min-height: 0;
+  background: var(--bg-elevated);
+}
+
+html.popup .options-shell {
+  min-height: 0;
+  display: block;
+  padding: 0;
+}
+
+html.popup .options-card {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  background: transparent;
+}
+
+html.popup .options-heading {
+  margin-bottom: 14px;
+}
+
+html.popup .eyebrow {
+  display: none;
+}
+
+html.popup h1 {
+  font-size: 20px;
+}
+
+html.popup .subtitle {
+  font-size: 13px;
+}
+
+html.popup .settings-form {
+  gap: 10px;
+}
+
+html.popup .field {
+  padding: 12px;
+  gap: 8px;
+}
+
+html.popup .field-title {
+  font-size: 14px;
+}
+
+html.popup .field-description {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+html.popup .pattern-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+html.popup button {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+html.popup .remove-button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+}
+
+html.popup input[type="text"] {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .options-card {
+    padding: 22px;
+  }
+}
