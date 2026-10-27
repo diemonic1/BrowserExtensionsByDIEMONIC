@@ -1,4 +1,4 @@
-const DEFAULT_FOLDER_NAME = 'Смотреть';
+const DEFAULT_FOLDER_NAME = chrome.i18n.getMessage('defaultFolderName');
 const BOOKMARKS_BAR_ID = '1';
 
 //#region Icon version
@@ -112,7 +112,7 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "refresh-the-page-by-clearing-the-RAM",
-        title: "Обновить страницу, очистив ОЗУ",
+        title: chrome.i18n.getMessage('contextMenuReloadClearRam'),
         contexts: ["action"]
     });
 });

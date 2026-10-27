@@ -30,7 +30,7 @@ function createYoutubeBookmark() {
   }
   else {
     if (!video) {
-      showSavedToast('Видео не найдено');
+      showSavedToast(chrome.i18n.getMessage('toastVideoNotFound'));
       console.log('Видео не найдено');
       return;
     }
@@ -49,7 +49,7 @@ function proceedVideoBookmark(video, deleteYears, addSecondsToURL) {
       if (!currentTime
         || !duration
       ) {
-        showSavedToast('Видео не найдено');
+        showSavedToast(chrome.i18n.getMessage('toastVideoNotFound'));
         console.log('Видео не найдено');
         return;
       }
@@ -83,6 +83,10 @@ function proceedVideoBookmark(video, deleteYears, addSecondsToURL) {
           .trim();
       }
 
+      // User-defined replacements run in list order, and strictly before truncation so they
+      // operate on the full title.
+      title = applyTitleReplacements(title, settings.titleReplacements);
+
       if (title.length > maxLengthTitle) {
         title = title.slice(0, maxLengthTitle - 3) + '...';
       }
@@ -105,10 +109,10 @@ function proceedVideoBookmark(video, deleteYears, addSecondsToURL) {
         title: finalTitle
       });
 
-      showSavedToast('Сохранено!');
+      showSavedToast(chrome.i18n.getMessage('toastSaved'));
     }
     catch (error) {
-      showSavedToast('ОШИБКА: ' + error);
+      showSavedToast(chrome.i18n.getMessage('toastError', String(error)));
     }
   });
 }
@@ -171,14 +175,35 @@ function getSettings(callback) {
   chrome.storage.sync.get({
     videoOffset: DEFAULT_VIDEO_OFFSET,
     toastLeftOffset: DEFAULT_TOAST_LEFT_OFFSET,
-    maxTitleLength: DEFAULT_MAX_TITLE_LENGTH
+    maxTitleLength: DEFAULT_MAX_TITLE_LENGTH,
+    titleReplacements: []
   }, (settings) => {
     callback({
       videoOffset: clampOffset(settings.videoOffset),
       toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset),
-      maxTitleLength: clampMaxTitleLength(settings.maxTitleLength)
+      maxTitleLength: clampMaxTitleLength(settings.maxTitleLength),
+      titleReplacements: Array.isArray(settings.titleReplacements) ? settings.titleReplacements : []
     });
   });
+}
+
+function applyTitleReplacements(title, replacements) {
+  let result = title;
+
+  replacements.forEach((replacement) => {
+    if (!replacement || typeof replacement.from !== 'string' || replacement.from === '') {
+      return;
+    }
+
+    result = result.replaceAll(replacement.from, typeof replacement.to === 'string' ? replacement.to : '');
+  });
+
+  if (result === title) {
+    return title;
+  }
+
+  // Removing a word usually leaves doubled or edge spaces behind.
+  return result.replace(/\s{2,}/g, ' ').trim();
 }
 
 function applyToastOffset() {

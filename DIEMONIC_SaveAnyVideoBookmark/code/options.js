@@ -1,8 +1,9 @@
 const DEFAULT_SETTINGS = {
     videoOffset: 0,
-    folderName: 'Смотреть',
+    folderName: chrome.i18n.getMessage('defaultFolderName'),
     toastLeftOffset: '23.8%',
-    maxTitleLength: 38
+    maxTitleLength: 38,
+    titleReplacements: []
 };
 
 const MIN_MAX_TITLE_LENGTH = 15;
@@ -16,12 +17,26 @@ const maxTitleLengthValue = document.getElementById('max-title-length-value');
 const folderNameInput = document.getElementById('folder-name');
 const toastLeftOffsetInput = document.getElementById('toast-left-offset');
 const statusNode = document.getElementById('status');
+const replacementList = document.getElementById('replacement-list');
+const addReplacementButton = document.getElementById('add-replacement');
 
 const ICON_VERSIONS = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6'];
 const DEFAULT_ICON_SETTINGS = { iconVersion: 'v1' };
 
+localizePage();
 initialize();
 initializeIconPicker();
+
+function localizePage() {
+    document.documentElement.lang = chrome.i18n.getUILanguage();
+    document.title = chrome.i18n.getMessage('optionsPageTitle');
+
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+        node.textContent = chrome.i18n.getMessage(node.dataset.i18n);
+    });
+
+    folderNameInput.placeholder = DEFAULT_SETTINGS.folderName;
+}
 
 function initialize() {
     syncOffsetLabel(videoOffsetInput.value);
@@ -35,6 +50,7 @@ function initialize() {
         maxTitleLengthInput.value = String(normalizedSettings.maxTitleLength);
         syncOffsetLabel(normalizedSettings.videoOffset);
         syncMaxTitleLengthLabel(normalizedSettings.maxTitleLength);
+        renderReplacements(normalizedSettings.titleReplacements);
     });
 
     videoOffsetInput.addEventListener('input', () => {
@@ -45,25 +61,84 @@ function initialize() {
         syncMaxTitleLengthLabel(maxTitleLengthInput.value);
     });
 
+    addReplacementButton.addEventListener('click', () => {
+        const row = createReplacementRow({ from: '', to: '' });
+        replacementList.appendChild(row);
+        syncReplacementButtons();
+        row.querySelector('.replacement-from').focus();
+        // Nothing to save yet - a row with an empty "from" is dropped by normalizeReplacements().
+    });
+
+    replacementList.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) {
+            return;
+        }
+
+        const row = button.closest('.replacement-row');
+
+        if (button.dataset.action === 'up' && row.previousElementSibling) {
+            replacementList.insertBefore(row, row.previousElementSibling);
+        } else if (button.dataset.action === 'down' && row.nextElementSibling) {
+            replacementList.insertBefore(row.nextElementSibling, row);
+        } else if (button.dataset.action === 'remove') {
+            row.remove();
+        }
+
+        syncReplacementButtons();
+        saveSettings();
+    });
+
+    // Every edit is saved on its own. Typing and slider dragging fire "input" continuously, so
+    // those saves are debounced to stay within chrome.storage.sync write quotas.
+    form.addEventListener('input', scheduleSave);
+
+    // Normalized text values (trimmed folder name, "23.8%" format) are written back only once the
+    // field is left, so the input isn't rewritten under the cursor while typing.
+    form.addEventListener('change', (event) => {
+        saveSettings();
+
+        const settings = readSettings();
+        if (event.target === folderNameInput) {
+            folderNameInput.value = settings.folderName;
+        } else if (event.target === toastLeftOffsetInput) {
+            toastLeftOffsetInput.value = settings.toastLeftOffset;
+        }
+    });
+
+    // Enter in a text field would otherwise submit (and reload) the page.
     form.addEventListener('submit', (event) => {
         event.preventDefault();
+    });
 
-        const nextSettings = normalizeSettings({
-            videoOffset: videoOffsetInput.value,
-            folderName: folderNameInput.value,
-            toastLeftOffset: toastLeftOffsetInput.value,
-            maxTitleLength: maxTitleLengthInput.value
-        });
+    window.addEventListener('pagehide', () => {
+        if (scheduleSave.timeoutId) {
+            saveSettings();
+        }
+    });
+}
 
-        chrome.storage.sync.set(nextSettings, () => {
-            videoOffsetInput.value = String(nextSettings.videoOffset);
-            folderNameInput.value = nextSettings.folderName;
-            toastLeftOffsetInput.value = nextSettings.toastLeftOffset;
-            maxTitleLengthInput.value = String(nextSettings.maxTitleLength);
-            syncOffsetLabel(nextSettings.videoOffset);
-            syncMaxTitleLengthLabel(nextSettings.maxTitleLength);
-            showStatus('Settings saved');
-        });
+function readSettings() {
+    return normalizeSettings({
+        videoOffset: videoOffsetInput.value,
+        folderName: folderNameInput.value,
+        toastLeftOffset: toastLeftOffsetInput.value,
+        maxTitleLength: maxTitleLengthInput.value,
+        titleReplacements: readReplacements()
+    });
+}
+
+function scheduleSave() {
+    window.clearTimeout(scheduleSave.timeoutId);
+    scheduleSave.timeoutId = window.setTimeout(saveSettings, 400);
+}
+
+function saveSettings() {
+    window.clearTimeout(scheduleSave.timeoutId);
+    scheduleSave.timeoutId = null;
+
+    chrome.storage.sync.set(readSettings(), () => {
+        showStatus(chrome.i18n.getMessage('optionsSaved'));
     });
 }
 
@@ -72,8 +147,93 @@ function normalizeSettings(settings) {
         videoOffset: clampOffset(settings.videoOffset),
         folderName: normalizeFolderName(settings.folderName),
         toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset),
-        maxTitleLength: clampMaxTitleLength(settings.maxTitleLength)
+        maxTitleLength: clampMaxTitleLength(settings.maxTitleLength),
+        titleReplacements: normalizeReplacements(settings.titleReplacements)
     };
+}
+
+// Keeps only well-formed pairs with a non-empty "from" - an empty "to" is allowed and simply
+// removes the matched text from the title.
+function normalizeReplacements(value) {
+    if (!Array.isArray(value)) {
+        return DEFAULT_SETTINGS.titleReplacements;
+    }
+
+    return value
+        .filter((item) => item && typeof item.from === 'string' && item.from !== '')
+        .map((item) => ({
+            from: item.from,
+            to: typeof item.to === 'string' ? item.to : ''
+        }));
+}
+
+function readReplacements() {
+    return Array.from(replacementList.querySelectorAll('.replacement-row'), (row) => ({
+        from: row.querySelector('.replacement-from').value,
+        to: row.querySelector('.replacement-to').value
+    }));
+}
+
+function renderReplacements(replacements) {
+    replacementList.replaceChildren(...replacements.map(createReplacementRow));
+    syncReplacementButtons();
+}
+
+function createReplacementRow(replacement) {
+    const row = document.createElement('li');
+    row.className = 'replacement-row';
+
+    const fromInput = document.createElement('input');
+    fromInput.type = 'text';
+    fromInput.className = 'replacement-from';
+    fromInput.value = replacement.from;
+    fromInput.placeholder = chrome.i18n.getMessage('optionsReplacementFromPlaceholder');
+    fromInput.setAttribute('aria-label', chrome.i18n.getMessage('optionsReplacementFromLabel'));
+    fromInput.autocomplete = 'off';
+
+    const arrow = document.createElement('span');
+    arrow.className = 'replacement-arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '→';
+
+    const toInput = document.createElement('input');
+    toInput.type = 'text';
+    toInput.className = 'replacement-to';
+    toInput.value = replacement.to;
+    toInput.placeholder = chrome.i18n.getMessage('optionsReplacementToPlaceholder');
+    toInput.setAttribute('aria-label', chrome.i18n.getMessage('optionsReplacementToLabel'));
+    toInput.autocomplete = 'off';
+
+    const controls = document.createElement('div');
+    controls.className = 'replacement-controls';
+    controls.append(
+        createReplacementButton('up', '↑', 'optionsReplacementMoveUp'),
+        createReplacementButton('down', '↓', 'optionsReplacementMoveDown'),
+        createReplacementButton('remove', '✕', 'optionsReplacementRemove')
+    );
+
+    row.append(fromInput, arrow, toInput, controls);
+    return row;
+}
+
+function createReplacementButton(action, symbol, labelKey) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon-button';
+    button.dataset.action = action;
+    button.textContent = symbol;
+    button.title = chrome.i18n.getMessage(labelKey);
+    button.setAttribute('aria-label', button.title);
+    return button;
+}
+
+function syncReplacementButtons() {
+    const rows = replacementList.querySelectorAll('.replacement-row');
+
+    rows.forEach((row, index) => {
+        row.querySelector('[data-action="up"]').disabled = index === 0;
+        row.querySelector('[data-action="down"]').disabled = index === rows.length - 1;
+    });
 }
 
 function clampMaxTitleLength(value) {
@@ -128,7 +288,7 @@ function normalizeToastLeftOffset(value) {
 }
 
 function syncOffsetLabel(value) {
-    videoOffsetValue.value = `${value}s`;
+    videoOffsetValue.value = chrome.i18n.getMessage('optionsSecondsSuffix', String(value));
 }
 
 function syncMaxTitleLengthLabel(value) {
@@ -153,7 +313,7 @@ function initializeIconPicker() {
         tile.type = 'button';
         tile.className = 'icon-tile';
         tile.dataset.version = version;
-        tile.setAttribute('aria-label', `Icon option ${version}`);
+        tile.setAttribute('aria-label', chrome.i18n.getMessage('optionsIconOptionLabel', version));
         tile.setAttribute('aria-pressed', 'false');
 
         const img = document.createElement('img');

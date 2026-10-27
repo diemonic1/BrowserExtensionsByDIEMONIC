@@ -10,21 +10,21 @@
   <main class="options-shell">
     <section class="options-card">
       <div class="options-heading">
-        <p class="eyebrow">Extension Settings</p>
+        <p class="eyebrow" data-i18n="optionsEyebrow">Extension Settings</p>
         <h1>SaveAnyVideoBookmark</h1>
-        <p class="subtitle">Adjust where bookmarks are saved and how video time is captured.</p>
+        <p class="subtitle" data-i18n="optionsSubtitle">Adjust where bookmarks are saved and how video time is captured.</p>
       </div>
 
       <form id="settings-form" class="settings-form">
         <div class="field">
-          <span class="field-title">Extension icon</span>
-          <span class="field-description">Pick which icon to show in the toolbar.</span>
+          <span class="field-title" data-i18n="optionsIconTitle">Extension icon</span>
+          <span class="field-description" data-i18n="optionsIconDescription">Pick which icon to show in the toolbar.</span>
           <div class="icon-grid" id="iconGrid"></div>
         </div>
 
         <label class="field" for="video-offset">
-          <span class="field-title">Video offset</span>
-          <span class="field-description">Set offset in seconds. When saving a bookmark with a video, subtracts this value from the actual time watched</span>
+          <span class="field-title" data-i18n="optionsVideoOffsetTitle">Video offset</span>
+          <span class="field-description" data-i18n="optionsVideoOffsetDescription">Set offset in seconds. When saving a bookmark with a video, subtracts this value from the actual time watched</span>
           <div class="range-row">
             <input id="video-offset" name="videoOffset" type="range" min="0" max="3" step="1" value="0">
             <output id="video-offset-value" for="video-offset">0s</output>
@@ -32,33 +32,39 @@
         </label>
 
         <label class="field" for="max-title-length">
-          <span class="field-title">Max title length</span>
-          <span class="field-description">Maximum number of characters in the video title of a saved bookmark. Longer titles are truncated with "..."</span>
+          <span class="field-title" data-i18n="optionsMaxTitleLengthTitle">Max title length</span>
+          <span class="field-description" data-i18n="optionsMaxTitleLengthDescription">Maximum number of characters in the video title of a saved bookmark. Longer titles are truncated with "..."</span>
           <div class="range-row">
             <input id="max-title-length" name="maxTitleLength" type="range" min="15" max="48" step="1" value="38">
             <output id="max-title-length-value" for="max-title-length">38</output>
           </div>
         </label>
 
+        <div class="field">
+          <span class="field-title" data-i18n="optionsReplacementsTitle">Title replacements</span>
+          <span class="field-description" data-i18n="optionsReplacementsDescription">Replace text in the bookmark title.</span>
+          <ol class="replacement-list" id="replacement-list"></ol>
+          <div>
+            <button id="add-replacement" type="button" class="secondary-button" data-i18n="optionsReplacementAdd">Add replacement</button>
+          </div>
+        </div>
+
         <label class="field" for="folder-name">
-          <span class="field-title">Bookmark folder</span>
-          <span class="field-description">Name of the folder where the bookmark is saved</span>
+          <span class="field-title" data-i18n="optionsFolderTitle">Bookmark folder</span>
+          <span class="field-description" data-i18n="optionsFolderDescription">Name of the folder where the bookmark is saved</span>
           <input id="folder-name" name="folderName" type="text" maxlength="120" placeholder="Смотреть" autocomplete="off">
         </label>
 
         <label class="field" for="toast-left-offset">
-          <span class="field-title">Popup notification offset</span>
-          <span class="field-description">Left offset for the popup notification. Use a percent value such as 23.8%.</span>
+          <span class="field-title" data-i18n="optionsToastOffsetTitle">Popup notification offset</span>
+          <span class="field-description" data-i18n="optionsToastOffsetDescription">Left offset for the popup notification. Use a percent value such as 23.8%.</span>
           <input id="toast-left-offset" name="toastLeftOffset" type="text" inputmode="decimal" maxlength="12" placeholder="23.8%" autocomplete="off">
         </label>
-
-        <div class="actions">
-          <button id="save-button" type="submit">Save settings</button>
-          <span id="status" class="status" aria-live="polite"></span>
-        </div>
       </form>
     </section>
   </main>
+
+  <span id="status" class="status" aria-live="polite"></span>
 
   <script src="options.js"></script>
 </body>

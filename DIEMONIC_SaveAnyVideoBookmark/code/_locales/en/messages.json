@@ -1,0 +1,120 @@
+{
+   "extName": {
+      "message": "D!EMONIC | SaveAnyVideoBookmark"
+   },
+   "extDescription": {
+      "message": "Save a bookmark with any video"
+   },
+   "defaultFolderName": {
+      "message": "Watch",
+      "description": "Default name of the bookmark folder on the bookmarks bar"
+   },
+   "contextMenuReloadClearRam": {
+      "message": "Reload page, clearing RAM"
+   },
+   "toastVideoNotFound": {
+      "message": "Video not found"
+   },
+   "toastSaved": {
+      "message": "Saved!"
+   },
+   "toastError": {
+      "message": "ERROR: $ERROR$",
+      "placeholders": {
+         "error": {
+            "content": "$1",
+            "example": "TypeError: x is undefined"
+         }
+      }
+   },
+   "optionsPageTitle": {
+      "message": "SaveAnyVideoBookmark Settings"
+   },
+   "optionsEyebrow": {
+      "message": "Extension Settings"
+   },
+   "optionsSubtitle": {
+      "message": "Adjust where bookmarks are saved and how video time is captured."
+   },
+   "optionsIconTitle": {
+      "message": "Extension icon"
+   },
+   "optionsIconDescription": {
+      "message": "Pick which icon to show in the toolbar."
+   },
+   "optionsIconOptionLabel": {
+      "message": "Icon option $VERSION$",
+      "placeholders": {
+         "version": {
+            "content": "$1",
+            "example": "v1"
+         }
+      }
+   },
+   "optionsVideoOffsetTitle": {
+      "message": "Video offset"
+   },
+   "optionsVideoOffsetDescription": {
+      "message": "Set offset in seconds. When saving a bookmark with a video, subtracts this value from the actual time watched"
+   },
+   "optionsSecondsSuffix": {
+      "message": "$VALUE$s",
+      "placeholders": {
+         "value": {
+            "content": "$1",
+            "example": "2"
+         }
+      }
+   },
+   "optionsMaxTitleLengthTitle": {
+      "message": "Max title length"
+   },
+   "optionsMaxTitleLengthDescription": {
+      "message": "Maximum number of characters in the video title of a saved bookmark. Longer titles are truncated with \"...\""
+   },
+   "optionsFolderTitle": {
+      "message": "Bookmark folder"
+   },
+   "optionsFolderDescription": {
+      "message": "Name of the folder where the bookmark is saved"
+   },
+   "optionsToastOffsetTitle": {
+      "message": "Popup notification offset"
+   },
+   "optionsToastOffsetDescription": {
+      "message": "Left offset for the popup notification. Use a percent value such as 23.8%."
+   },
+   "optionsSaved": {
+      "message": "Settings saved"
+   },
+   "optionsReplacementsTitle": {
+      "message": "Title replacements"
+   },
+   "optionsReplacementsDescription": {
+      "message": "Replace text in the bookmark title. Replacements are applied top to bottom, before the title is truncated. Leave the second field empty to remove the text."
+   },
+   "optionsReplacementAdd": {
+      "message": "Add replacement"
+   },
+   "optionsReplacementFromPlaceholder": {
+      "message": "Watch for free"
+   },
+   "optionsReplacementToPlaceholder": {
+      "message": "Watch"
+   },
+   "optionsReplacementFromLabel": {
+      "message": "Text to replace"
+   },
+   "optionsReplacementToLabel": {
+      "message": "Replace with"
+   },
+   "optionsReplacementMoveUp": {
+      "message": "Move up"
+   },
+   "optionsReplacementMoveDown": {
+      "message": "Move down"
+   },
+   "optionsReplacementRemove": {
+      "message": "Remove replacement"
+   }
+}

@@ -1,0 +1,120 @@
+{
+   "extName": {
+      "message": "D!EMONIC | SaveAnyVideoBookmark"
+   },
+   "extDescription": {
+      "message": "Сохраняет закладку на любое видео с текущим временем просмотра"
+   },
+   "defaultFolderName": {
+      "message": "Смотреть",
+      "description": "Default name of the bookmark folder on the bookmarks bar"
+   },
+   "contextMenuReloadClearRam": {
+      "message": "Обновить страницу, очистив ОЗУ"
+   },
+   "toastVideoNotFound": {
+      "message": "Видео не найдено"
+   },
+   "toastSaved": {
+      "message": "Сохранено!"
+   },
+   "toastError": {
+      "message": "ОШИБКА: $ERROR$",
+      "placeholders": {
+         "error": {
+            "content": "$1",
+            "example": "TypeError: x is undefined"
+         }
+      }
+   },
+   "optionsPageTitle": {
+      "message": "Настройки SaveAnyVideoBookmark"
+   },
+   "optionsEyebrow": {
+      "message": "Настройки расширения"
+   },
+   "optionsSubtitle": {
+      "message": "Настройте, куда сохраняются закладки и как фиксируется время видео."
+   },
+   "optionsIconTitle": {
+      "message": "Иконка расширения"
+   },
+   "optionsIconDescription": {
+      "message": "Выберите, какую иконку показывать на панели инструментов."
+   },
+   "optionsIconOptionLabel": {
+      "message": "Вариант иконки $VERSION$",
+      "placeholders": {
+         "version": {
+            "content": "$1",
+            "example": "v1"
+         }
+      }
+   },
+   "optionsVideoOffsetTitle": {
+      "message": "Смещение времени видео"
+   },
+   "optionsVideoOffsetDescription": {
+      "message": "Смещение в секундах. При сохранении закладки на видео это значение вычитается из фактического времени просмотра"
+   },
+   "optionsSecondsSuffix": {
+      "message": "$VALUE$ с",
+      "placeholders": {
+         "value": {
+            "content": "$1",
+            "example": "2"
+         }
+      }
+   },
+   "optionsMaxTitleLengthTitle": {
+      "message": "Максимальная длина названия"
+   },
+   "optionsMaxTitleLengthDescription": {
+      "message": "Максимальное количество символов в названии видео у сохранённой закладки. Более длинные названия обрезаются с \"...\""
+   },
+   "optionsFolderTitle": {
+      "message": "Папка закладок"
+   },
+   "optionsFolderDescription": {
+      "message": "Название папки, в которую сохраняется закладка"
+   },
+   "optionsToastOffsetTitle": {
+      "message": "Смещение всплывающего уведомления"
+   },
+   "optionsToastOffsetDescription": {
+      "message": "Отступ слева для всплывающего уведомления. Укажите значение в процентах, например 23.8%."
+   },
+   "optionsSaved": {
+      "message": "Настройки сохранены"
+   },
+   "optionsReplacementsTitle": {
+      "message": "Замены в названии"
+   },
+   "optionsReplacementsDescription": {
+      "message": "Заменяет текст в названии закладки. Замены применяются сверху вниз, до обрезки названия. Оставьте второе поле пустым, чтобы просто удалить текст."
+   },
+   "optionsReplacementAdd": {
+      "message": "Добавить замену"
+   },
+   "optionsReplacementFromPlaceholder": {
+      "message": "Смотреть бесплатно"
+   },
+   "optionsReplacementToPlaceholder": {
+      "message": "Смотреть"
+   },
+   "optionsReplacementFromLabel": {
+      "message": "Что заменить"
+   },
+   "optionsReplacementToLabel": {
+      "message": "На что заменить"
+   },
+   "optionsReplacementMoveUp": {
+      "message": "Переместить выше"
+   },
+   "optionsReplacementMoveDown": {
+      "message": "Переместить ниже"
+   },
+   "optionsReplacementRemove": {
+      "message": "Удалить замену"
+   }
+}
