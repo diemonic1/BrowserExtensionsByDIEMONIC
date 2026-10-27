@@ -60,6 +60,13 @@
           <span class="field-description" data-i18n="optionsToastOffsetDescription">Left offset for the popup notification. Use a percent value such as 23.8%.</span>
           <input id="toast-left-offset" name="toastLeftOffset" type="text" inputmode="decimal" maxlength="12" placeholder="23.8%" autocomplete="off">
         </label>
+
+        <div class="field">
+          <span class="field-title" data-i18n="optionsCustomLinkTitle">Custom link button</span>
+          <span class="field-description" data-i18n="optionsCustomLinkDescription">Adds a button to the extension icon's context menu that requests this link in the background, without opening a tab. %VIDEO_LINK% is replaced with the link to the current video at its current time.</span>
+          <input id="custom-link-name" name="customLinkName" type="text" maxlength="120" autocomplete="off">
+          <input id="custom-link-url" name="customLinkUrl" type="text" maxlength="2000" placeholder="https://some-site.com/open_link?link=%VIDEO_LINK%" autocomplete="off" spellcheck="false">
+        </div>
       </form>
     </section>
   </main>

@@ -142,9 +142,11 @@ function findVideoForReload(onFound) {
 }
 
 // Mirrors proceedVideoBookmark()'s time/URL logic (same videoOffset setting, same "?t=" param),
-// but instead of creating a bookmark it hands the timestamped URL to background.js so it can
-// reopen the tab at that moment - see the "refresh-the-page-by-clearing-the-RAM" context menu.
-function sendCurrentVideoTimeForReload() {
+// but instead of creating a bookmark it hands the timestamped URL to background.js under
+// responseAction: 'reloadWithVideoTime' reopens the tab at that moment (the
+// "refresh-the-page-by-clearing-the-RAM" context menu), 'openCustomLinkWithVideo' substitutes it
+// into the user's custom link.
+function sendCurrentVideoTimeUrl(responseAction) {
   findVideoForReload((video) => {
     getSettings((settings) => {
       try {
@@ -161,11 +163,11 @@ function sendCurrentVideoTimeForReload() {
         url.searchParams.set('t', savedTime);
 
         chrome.runtime.sendMessage({
-          action: 'reloadWithVideoTime',
+          action: responseAction,
           url: url.toString()
         });
       } catch (error) {
-        console.log('Не удалось получить время видео для перезагрузки:', error);
+        console.log('Не удалось получить время видео:', error);
       }
     });
   });
@@ -299,6 +301,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "runСreateYoutubeBookmark") {
     createYoutubeBookmark();
   } else if (message.action === "getCurrentVideoTimeForReload") {
-    sendCurrentVideoTimeForReload();
+    sendCurrentVideoTimeUrl('reloadWithVideoTime');
+  } else if (message.action === "getCurrentVideoLinkForCustomLink") {
+    sendCurrentVideoTimeUrl('openCustomLinkWithVideo');
+  } else if (message.action === "showToast") {
+    showSavedToast(message.text);
   }
 });

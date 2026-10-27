@@ -116,5 +116,23 @@
    },
    "optionsReplacementRemove": {
       "message": "Удалить замену"
+   },
+   "contextMenuCustomLinkDefault": {
+      "message": "Открыть видео по своей ссылке"
+   },
+   "optionsCustomLinkTitle": {
+      "message": "Кнопка своей ссылки"
+   },
+   "optionsCustomLinkDescription": {
+      "message": "Добавляет в контекстное меню иконки расширения кнопку, которая отправляет запрос по указанной ссылке в фоне, без открытия вкладки. Вместо %VIDEO_LINK% подставляется ссылка на текущее видео с привязкой ко времени. Результат показывается всплывающим уведомлением. Если ссылка не задана, кнопка не показывается."
+   },
+   "optionsCustomLinkNameLabel": {
+      "message": "Название кнопки"
+   },
+   "optionsCustomLinkUrlLabel": {
+      "message": "Ссылка"
+   },
+   "toastCustomLinkSent": {
+      "message": "Ссылка отправлена!"
    }
 }

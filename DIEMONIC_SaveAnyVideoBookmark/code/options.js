@@ -3,7 +3,9 @@ const DEFAULT_SETTINGS = {
     folderName: chrome.i18n.getMessage('defaultFolderName'),
     toastLeftOffset: '23.8%',
     maxTitleLength: 38,
-    titleReplacements: []
+    titleReplacements: [],
+    customLinkName: chrome.i18n.getMessage('contextMenuCustomLinkDefault'),
+    customLinkUrl: ''
 };
 
 const MIN_MAX_TITLE_LENGTH = 15;
@@ -16,6 +18,8 @@ const maxTitleLengthInput = document.getElementById('max-title-length');
 const maxTitleLengthValue = document.getElementById('max-title-length-value');
 const folderNameInput = document.getElementById('folder-name');
 const toastLeftOffsetInput = document.getElementById('toast-left-offset');
+const customLinkNameInput = document.getElementById('custom-link-name');
+const customLinkUrlInput = document.getElementById('custom-link-url');
 const statusNode = document.getElementById('status');
 const replacementList = document.getElementById('replacement-list');
 const addReplacementButton = document.getElementById('add-replacement');
@@ -36,6 +40,9 @@ function localizePage() {
     });
 
     folderNameInput.placeholder = DEFAULT_SETTINGS.folderName;
+    customLinkNameInput.placeholder = DEFAULT_SETTINGS.customLinkName;
+    customLinkNameInput.setAttribute('aria-label', chrome.i18n.getMessage('optionsCustomLinkNameLabel'));
+    customLinkUrlInput.setAttribute('aria-label', chrome.i18n.getMessage('optionsCustomLinkUrlLabel'));
 }
 
 function initialize() {
@@ -48,6 +55,8 @@ function initialize() {
         folderNameInput.value = normalizedSettings.folderName;
         toastLeftOffsetInput.value = normalizedSettings.toastLeftOffset;
         maxTitleLengthInput.value = String(normalizedSettings.maxTitleLength);
+        customLinkNameInput.value = normalizedSettings.customLinkName;
+        customLinkUrlInput.value = normalizedSettings.customLinkUrl;
         syncOffsetLabel(normalizedSettings.videoOffset);
         syncMaxTitleLengthLabel(normalizedSettings.maxTitleLength);
         renderReplacements(normalizedSettings.titleReplacements);
@@ -103,6 +112,10 @@ function initialize() {
             folderNameInput.value = settings.folderName;
         } else if (event.target === toastLeftOffsetInput) {
             toastLeftOffsetInput.value = settings.toastLeftOffset;
+        } else if (event.target === customLinkNameInput) {
+            customLinkNameInput.value = settings.customLinkName;
+        } else if (event.target === customLinkUrlInput) {
+            customLinkUrlInput.value = settings.customLinkUrl;
         }
     });
 
@@ -124,7 +137,9 @@ function readSettings() {
         folderName: folderNameInput.value,
         toastLeftOffset: toastLeftOffsetInput.value,
         maxTitleLength: maxTitleLengthInput.value,
-        titleReplacements: readReplacements()
+        titleReplacements: readReplacements(),
+        customLinkName: customLinkNameInput.value,
+        customLinkUrl: customLinkUrlInput.value
     });
 }
 
@@ -148,7 +163,9 @@ function normalizeSettings(settings) {
         folderName: normalizeFolderName(settings.folderName),
         toastLeftOffset: normalizeToastLeftOffset(settings.toastLeftOffset),
         maxTitleLength: clampMaxTitleLength(settings.maxTitleLength),
-        titleReplacements: normalizeReplacements(settings.titleReplacements)
+        titleReplacements: normalizeReplacements(settings.titleReplacements),
+        customLinkName: normalizeCustomLinkName(settings.customLinkName),
+        customLinkUrl: typeof settings.customLinkUrl === 'string' ? settings.customLinkUrl.trim() : DEFAULT_SETTINGS.customLinkUrl
     };
 }
 
@@ -264,6 +281,16 @@ function normalizeFolderName(value) {
     const normalizedValue = value.trim();
 
     return normalizedValue || DEFAULT_SETTINGS.folderName;
+}
+
+function normalizeCustomLinkName(value) {
+    if (typeof value !== 'string') {
+        return DEFAULT_SETTINGS.customLinkName;
+    }
+
+    const normalizedValue = value.trim();
+
+    return normalizedValue || DEFAULT_SETTINGS.customLinkName;
 }
 
 function normalizeToastLeftOffset(value) {

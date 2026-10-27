@@ -116,5 +116,23 @@
    },
    "optionsReplacementRemove": {
       "message": "Remove replacement"
+   },
+   "contextMenuCustomLinkDefault": {
+      "message": "Open video via custom link"
+   },
+   "optionsCustomLinkTitle": {
+      "message": "Custom link button"
+   },
+   "optionsCustomLinkDescription": {
+      "message": "Adds a button to the extension icon's context menu that requests this link in the background, without opening a tab. %VIDEO_LINK% is replaced with the link to the current video at its current time. The result is shown as a popup notification. The button is hidden while the link is empty."
+   },
+   "optionsCustomLinkNameLabel": {
+      "message": "Button name"
+   },
+   "optionsCustomLinkUrlLabel": {
+      "message": "Link"
+   },
+   "toastCustomLinkSent": {
+      "message": "Link sent!"
    }
 }
