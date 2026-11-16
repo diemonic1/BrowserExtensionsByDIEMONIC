@@ -215,6 +215,33 @@
             });
         }
 
+        // Ranges like "2 000 до 3 000 $" / "100 - 200 EUR": the first number has no currency of
+        // its own, so it inherits the one from the number that follows the separator.
+        const rangeMatches = [];
+        matches.forEach((match) => {
+            if (!/^\d/.test(match.value)) {
+                return;
+            }
+            const tokenPart = match.value.replace(/^[\d\s.,]+/, "");
+            const before = compact.slice(0, match.start);
+            const rangeHit = before.match(/(\d[\d\s.,]*?)\s*(?:до|to|[-–—])\s*$/i);
+            if (!rangeHit) {
+                return;
+            }
+            const numberText = rangeHit[1];
+            const numberStart = before.length - rangeHit[0].length;
+            rangeMatches.push({
+                value: `${numberText.trim()} ${tokenPart}`,
+                start: numberStart,
+                end: numberStart + numberText.length
+            });
+        });
+
+        if (rangeMatches.length) {
+            matches.push(...rangeMatches);
+            matches.sort((a, b) => a.start - b.start);
+        }
+
         return matches;
     }
 
@@ -388,6 +415,14 @@
 
         const tooltip = buildTooltip();
         const processed = new WeakSet();
+        const spanData = new WeakMap();
+
+        if (!document.getElementById("dc-target-style")) {
+            const style = document.createElement("style");
+            style.id = "dc-target-style";
+            style.textContent = `.dc-price-target{cursor:help !important;text-decoration:underline dotted ${COLOR_OF_UNDERLINE} !important;text-underline-offset:2px !important;}`;
+            document.documentElement.appendChild(style);
+        }
 
         function bindSpan(span, parsed) {
             if (processed.has(span)) {
@@ -395,17 +430,49 @@
             }
             processed.add(span);
 
-            span.addEventListener("mouseenter", () => {
-                const text = createConversionText(parsed, ratesBundle.rates);
-                if (!text) {
-                    return;
-                }
-                showTooltip(tooltip, span.getBoundingClientRect(), text.replace(/\n/g, "<br>"));
-            });
-
-            span.addEventListener("mouseleave", () => hideTooltip(tooltip));
-            span.addEventListener("blur", () => hideTooltip(tooltip));
+            spanData.set(span, parsed);
         }
+
+        // One delegated listener instead of per-span mouseenter: on sites like Amazon the price
+        // can be covered by transparent link/overlay layers, so the span never becomes the event
+        // target. elementsFromPoint() sees through such layers.
+        let activeSpan = null;
+        function findPriceSpanAt(event) {
+            const direct = event.target && event.target.closest ? event.target.closest(".dc-price-target") : null;
+            if (direct) {
+                return direct;
+            }
+            const stack = document.elementsFromPoint(event.clientX, event.clientY);
+            for (const el of stack) {
+                if (el.classList && el.classList.contains("dc-price-target")) {
+                    return el;
+                }
+            }
+            return null;
+        }
+
+        document.addEventListener("mousemove", (event) => {
+            const span = findPriceSpanAt(event);
+            if (span === activeSpan) {
+                return;
+            }
+            activeSpan = span;
+            if (!span || !spanData.has(span)) {
+                hideTooltip(tooltip);
+                return;
+            }
+            const text = createConversionText(spanData.get(span), ratesBundle.rates);
+            if (!text) {
+                hideTooltip(tooltip);
+                return;
+            }
+            showTooltip(tooltip, span.getBoundingClientRect(), text.replace(/\n/g, "<br>"));
+        }, { passive: true, capture: true });
+
+        document.addEventListener("mouseleave", () => {
+            activeSpan = null;
+            hideTooltip(tooltip);
+        });
 
         function scan(root) {
             const walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT);
@@ -423,6 +490,9 @@
                     continue;
                 }
                 if (parent.closest("[data-ext-converted], [data-ext-price-mem]")) {
+                    continue;
+                }
+                if (parent.closest(".a-price")) {
                     continue;
                 }
                 const text = node.textContent;
@@ -487,6 +557,7 @@
                 node.parentNode.replaceChild(frag, node);
             });
 
+            scanAmazonPrices(root);
             scanElementLevel(root);
         }
 
@@ -521,34 +592,105 @@
         // several sibling text nodes (e.g. split up by "<!-- -->" hydration comments) - instead
         // of styling/binding the whole surrounding phrase, which would make the entire sentence
         // hoverable rather than just the price itself.
+        function createPriceSpan(parsed) {
+            const span = document.createElement("span");
+            span.className = "dc-price-target";
+            span.style.setProperty("cursor", "help", "important");
+            span.style.setProperty("text-decoration", `underline dotted ${COLOR_OF_UNDERLINE}`, "important");
+            span.style.setProperty("text-underline-offset", "2px", "important");
+            span.tabIndex = -1;
+            bindSpan(span, parsed);
+            return span;
+        }
+
+        // Wraps every text node (or the part of it) that falls inside [start, end) in its own
+        // span. Each text node is wrapped separately - instead of one Range.surroundContents()
+        // call - because the price is often spread over sibling elements (e.g.
+        // "<data>3 000</data> <data>$</data>" on hh.ru), and surroundContents() throws when the
+        // range partially selects such an element.
         function wrapMatchRange(segments, part, parsed) {
-            const startPoint = locateOffset(segments, part.start);
-            const endPoint = locateOffset(segments, part.end);
-            if (!startPoint || !endPoint) {
-                return false;
+            let wrapped = false;
+            // Reverse order so splitting a node never shifts the nodes still to be processed.
+            for (let i = segments.length - 1; i >= 0; i--) {
+                const segment = segments[i];
+                const from = Math.max(part.start, segment.start) - segment.start;
+                const to = Math.min(part.end, segment.end) - segment.start;
+                if (to <= from || !segment.node.parentNode) {
+                    continue;
+                }
+
+                let target = segment.node;
+                if (to < target.nodeValue.length) {
+                    target.splitText(to);
+                }
+                if (from > 0) {
+                    target = target.splitText(from);
+                }
+
+                const span = createPriceSpan(parsed);
+                target.parentNode.replaceChild(span, target);
+                span.appendChild(target);
+                wrapped = true;
+            }
+            return wrapped;
+        }
+
+        // Amazon renders a price twice: a visually hidden ".a-offscreen" copy with the clean full
+        // text ("$777.00") and a visible, aria-hidden copy split into symbol / whole / decimal /
+        // fraction pieces. The generic scans can't pair them up, so read the clean text and attach
+        // the tooltip to the visible pieces.
+        function scanAmazonPrices(root) {
+            const container = root && root.nodeType === Node.ELEMENT_NODE ? root : document.body;
+            if (!container || !container.querySelectorAll) {
+                return;
             }
 
-            try {
-                const range = document.createRange();
-                range.setStart(startPoint.node, startPoint.localOffset);
-                range.setEnd(endPoint.node, endPoint.localOffset);
-
-                const span = document.createElement("span");
-                span.className = "dc-price-target";
-                span.style.cursor = "help";
-                span.style.textDecoration = `underline dotted ${COLOR_OF_UNDERLINE}`;
-                span.style.textUnderlineOffset = "2px";
-                span.tabIndex = -1;
-
-                range.surroundContents(span);
-                bindSpan(span, parsed);
-                return true;
-            } catch (e) {
-                // surroundContents() throws if the range's boundaries don't line up cleanly with
-                // node structure (e.g. a partially-selected element in some unusual markup) -
-                // just skip this candidate rather than falling back to whole-element styling.
-                return false;
+            const prices = new Set();
+            // A re-render may add only an inner piece of a price - look at the enclosing .a-price too.
+            const enclosing = container.closest ? container.closest(".a-price") : null;
+            if (enclosing) {
+                prices.add(enclosing);
             }
+            if (container.matches && container.matches(".a-price")) {
+                prices.add(container);
+            }
+            container.querySelectorAll(".a-price").forEach((el) => prices.add(el));
+
+            prices.forEach((priceEl) => {
+                // No "processed" flag here: Amazon re-renders prices in place (e.g. the main
+                // price), which drops our wrappers; just check whether they're still there.
+                const allSegments = collectTextSegments(priceEl)
+                    .filter((segment) => !segment.node.parentElement.closest(".a-offscreen"));
+                if (!allSegments.length) {
+                    return;
+                }
+                const alreadyWrapped = allSegments.every((segment) => segment.node.parentElement.closest(".dc-price-target"));
+                if (alreadyWrapped) {
+                    return;
+                }
+
+                // Prefer the clean hidden copy ("$777.00"); fall back to stitching the visible
+                // symbol / whole / fraction pieces together.
+                let parsed = null;
+                const offscreen = priceEl.querySelector(".a-offscreen");
+                if (offscreen) {
+                    parsed = parsePriceCandidate((offscreen.textContent || "").replace(/ /g, " ").trim());
+                }
+                if (!parsed) {
+                    const symbol = (priceEl.querySelector(".a-price-symbol") || {}).textContent || "";
+                    const whole = ((priceEl.querySelector(".a-price-whole") || {}).textContent || "").replace(/[^\d,]/g, "");
+                    const fraction = ((priceEl.querySelector(".a-price-fraction") || {}).textContent || "").replace(/\D/g, "");
+                    if (symbol && whole) {
+                        parsed = parsePriceCandidate(`${symbol.trim()}${whole}${fraction ? "." + fraction : ""}`);
+                    }
+                }
+                if (!parsed || parsed.code === "RUB") {
+                    return;
+                }
+
+                const toWrap = allSegments.filter((segment) => !segment.node.parentElement.closest(".dc-price-target"));
+                wrapMatchRange(toWrap, { start: 0, end: Infinity }, parsed);
+            });
         }
 
         // The text-node pass above only ever looks at a single text node's own textContent, so
@@ -589,6 +731,11 @@
                 if (element.closest("[data-ext-converted], [data-ext-price-mem]")) {
                     return;
                 }
+                if (element.closest(".a-price, .a-offscreen") || element.querySelector(".a-price")) {
+                    // Amazon prices are duplicated in the DOM (hidden + visible copy) - handled
+                    // separately by scanAmazonPrices().
+                    return;
+                }
                 if (element.querySelector(".dc-price-target")) {
                     // The text-node pass already found and wrapped the price somewhere inside -
                     // don't double up on the parent too.
@@ -604,21 +751,20 @@
                 }
 
                 const parts = extractPriceParts(text);
-                if (parts.length !== 1) {
-                    // Also guards against ambiguity: if a container legitimately has more than
-                    // one distinct price in it, we wouldn't know which one a single tooltip on
-                    // the whole element should represent.
+                if (!parts.length) {
                     return;
                 }
 
-                const part = parts[0];
-                const parsed = parsePriceCandidate(part.value);
-                if (!parsed || parsed.code === "RUB") {
-                    return;
+                // Each matched price is wrapped on its own (only its own substring), so a
+                // container with several prices (e.g. a "from X to Y $" range) is fine.
+                // Last-to-first, re-collecting segments each time, since wrapping splits nodes.
+                for (let i = parts.length - 1; i >= 0; i--) {
+                    const parsed = parsePriceCandidate(parts[i].value);
+                    if (!parsed || parsed.code === "RUB") {
+                        continue;
+                    }
+                    wrapMatchRange(collectTextSegments(element), parts[i], parsed);
                 }
-
-                const segments = collectTextSegments(element);
-                wrapMatchRange(segments, part, parsed);
             });
         }
 
