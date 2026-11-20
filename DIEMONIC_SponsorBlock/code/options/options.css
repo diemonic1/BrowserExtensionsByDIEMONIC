@@ -896,3 +896,15 @@ svg {
 .configurationInfo .option-text-box {
     width: 100%;
 }
+
+/* D!EMONIC: modification credit under "Created by" */
+#createdBy {
+    height: auto;
+}
+
+#createdBy > #diemonicModification {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: rgb(255, 46, 143);
+}
