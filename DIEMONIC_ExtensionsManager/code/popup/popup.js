@@ -3,6 +3,7 @@
     const SORT_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
     const CLIENT_VERSION = "133.0.0.0";
     const BROWSER_EXTENSIONS_PAGE_URL = "chrome://extensions/";
+    const MAX_EXTENSION_ICON_SIZE = 512;
     //#endregion
 
     //#region Elements
@@ -101,6 +102,15 @@
             }, durationMs);
         }
     };
+
+    async function copyText(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            NotificationService.show(msg("copied"));
+        } catch {
+            NotificationService.show(msg("copyFailed"));
+        }
+    }
     //#endregion
 
     //#region Sorting
@@ -368,6 +378,11 @@
                 iconEl.src = pickIconUrl(extension.icons, extension.id);
                 iconEl.alt = extension.name;
                 nameEl.textContent = extension.name;
+                nameEl.title = msg("copyNameTitle");
+                nameEl.addEventListener("click", event => {
+                    event.stopPropagation();
+                    copyText(extension.name);
+                });
                 versionEl.textContent = `${msg("labelVersion")}: ${extension.version}`;
 
                 const isDev = isDevelopmentExtension(extension);
@@ -439,8 +454,22 @@
             return "../icon/v1/128.png";
         }
 
-        const sorted = [...icons].sort((a, b) => (b.size || 0) - (a.size || 0));
-        return sorted[0].url || "../icon/v1/128.png";
+        // chrome://extension-icon/<id>/<size>/<match> отдаёт иконки не больше 512px
+        // (EXTENSION_ICON_GIGANTOR). Для бОльших размеров Chrome возвращает иконку-заглушку.
+        const fitting = icons
+            .filter(icon => icon.url && (icon.size || 0) <= MAX_EXTENSION_ICON_SIZE)
+            .sort((a, b) => (b.size || 0) - (a.size || 0));
+        if (fitting.length > 0) {
+            return fitting[0].url;
+        }
+
+        // Все иконки больше лимита: запрашиваем максимально допустимый размер, Chrome сам уменьшит
+        const smallest = [...icons].filter(icon => icon.url).sort((a, b) => (a.size || 0) - (b.size || 0))[0];
+        if (!smallest) {
+            return "../icon/v1/128.png";
+        }
+
+        return smallest.url.replace(`/${smallest.size}/`, `/${MAX_EXTENSION_ICON_SIZE}/`);
     }
     //#endregion
 
@@ -455,6 +484,8 @@
         detailIconEl.src = pickIconUrl(extension.icons, extension.id);
         detailIconEl.alt = extension.name;
         detailNameEl.textContent = extension.name;
+        detailNameEl.title = msg("copyNameTitle");
+        detailNameEl.onclick = () => copyText(extension.name);
         detailDescriptionEl.textContent = (extension.description || "").trim() || msg("noDescription");
         detailVersionEl.textContent = extension.version;
         detailTypeEl.textContent = isDevelopmentExtension(extension) ? msg("typeDev") : msg("typeRegular");
@@ -468,14 +499,7 @@
             storeActionsEl.classList.remove("hidden");
             downloadActionsRowEl.classList.remove("hidden");
             openStoreBtnEl.onclick = () => openUrlInNewTab(storeUrl);
-            copyStoreBtnEl.onclick = async () => {
-                try {
-                    await navigator.clipboard.writeText(storeUrl);
-                    NotificationService.show(msg("copied"));
-                } catch {
-                    NotificationService.show(msg("copyFailed"));
-                }
-            };
+            copyStoreBtnEl.onclick = () => copyText(storeUrl);
         }
 
         if (extension.optionsUrl) {

@@ -76,6 +76,9 @@
     "copied": {
         "message": "Copied to clipboard"
     },
+    "copyNameTitle": {
+        "message": "Click to copy the name"
+    },
     "copyFailed": {
         "message": "Failed to copy"
     },

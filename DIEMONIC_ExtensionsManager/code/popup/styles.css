@@ -173,6 +173,16 @@ main::-webkit-scrollbar-thumb:hover {
     font-size: 13px;
 }
 
+.ext-name,
+#detailName {
+    cursor: pointer;
+}
+
+.ext-name:hover,
+#detailName:hover {
+    text-decoration: underline;
+}
+
 .dev-badge {
     width: 34px;
     border-radius: 6px;
