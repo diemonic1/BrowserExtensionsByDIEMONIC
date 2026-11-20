@@ -1,6 +1,7 @@
 const DEFAULT_SETTINGS = {
     moduleNotesExtenderEnabled: true,
     moduleWishlistExtenderEnabled: true,
+    moduleWishlistSorterEnabled: true,
 };
 
 function applyI18n() {
@@ -13,18 +14,15 @@ function applyI18n() {
 document.addEventListener('DOMContentLoaded', () => {
     applyI18n();
 
-    const moduleNotesCheckbox = document.getElementById('moduleNotesExtenderEnabled');
-    const moduleWishlistCheckbox = document.getElementById('moduleWishlistExtenderEnabled');
-
     chrome.storage.sync.get(DEFAULT_SETTINGS, (items) => {
-        moduleNotesCheckbox.checked = items.moduleNotesExtenderEnabled;
-        moduleWishlistCheckbox.checked = items.moduleWishlistExtenderEnabled;
-    });
+        Object.keys(DEFAULT_SETTINGS).forEach((key) => {
+            const checkbox = document.getElementById(key);
+            if (!checkbox) return;
 
-    moduleNotesCheckbox.addEventListener('change', () => {
-        chrome.storage.sync.set({ moduleNotesExtenderEnabled: moduleNotesCheckbox.checked });
-    });
-    moduleWishlistCheckbox.addEventListener('change', () => {
-        chrome.storage.sync.set({ moduleWishlistExtenderEnabled: moduleWishlistCheckbox.checked });
+            checkbox.checked = items[key];
+            checkbox.addEventListener('change', () => {
+                chrome.storage.sync.set({ [key]: checkbox.checked });
+            });
+        });
     });
 });

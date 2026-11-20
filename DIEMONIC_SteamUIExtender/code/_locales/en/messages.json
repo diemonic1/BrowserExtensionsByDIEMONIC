@@ -6,19 +6,50 @@
     "modulesCardTitle": { "message": "Modules" },
 
     "moduleNotesLabel": { "message": "Sort the notes list" },
-    "moduleNotesDescription": { "message": "On steamcommunity.com/notes/list: games with a resolvable AppID are moved above a separator line, everything else below it." },
+    "moduleNotesDescription": { "message": "On steamcommunity.com/notes/list: games with a resolvable AppID are moved above a separator line, everything else goes into a collapsible \"Other notes\" list below it." },
 
     "moduleWishlistLabel": { "message": "Flag Early Access on the wishlist" },
-    "moduleWishlistDescription": { "message": "On your Steam wishlist, adds an \"Early Access\" label with a link to the news page for already-released Early Access games." },
+    "moduleWishlistDescription": { "message": "On your Steam wishlist, turns the \"Early Access\" tag of already-released games into a link to the game's news page." },
 
-    "progressWaitingLabel": { "message": "Waiting for data..." },
-    "progressNoGamesLabel": { "message": "No matching games" },
-    "progressProcessingLabel": { "message": "Processing" },
-    "progressDoneLabel": { "message": "Done" },
+    "moduleWishlistSorterLabel": { "message": "Sort the wishlist by groups" },
+    "moduleWishlistSorterDescription": { "message": "On your own wishlist in \"Your rank\" mode, adds a button that orders games by group: released, released in Early Access, then unreleased by how soon they come out. Your order inside the released groups is kept." },
+
+    "sorterButton": { "message": "Sort by groups" },
+    "sorterButtonTooltip": { "message": "Released → Early Access → full date → month → quarter → year → \"Coming soon\" → \"To be announced\"" },
+    "sorterRestoreButton": { "message": "Restore previous order" },
+    "sorterRestoreTooltip": {
+        "message": "Restore the order saved on $DATE$",
+        "placeholders": { "date": { "content": "$1" } }
+    },
+    "sorterRestoreConfirm": {
+        "message": "Restore the wishlist order saved on $DATE$?",
+        "placeholders": { "date": { "content": "$1" } }
+    },
+    "sorterLoading": { "message": "Loading the list…" },
+    "sorterAlreadySorted": { "message": "The list is already sorted" },
+    "sorterConfirm": {
+        "message": "Games to move: $COUNT$. The current order will be saved so you can restore it. Continue?",
+        "placeholders": { "count": { "content": "$1" } }
+    },
+    "sorterProgress": {
+        "message": "Moved $DONE$ / $TOTAL$",
+        "placeholders": { "done": { "content": "$1" }, "total": { "content": "$2" } }
+    },
+    "sorterDone": { "message": "Done, reloading the page…" },
+    "sorterError": {
+        "message": "Error: $ERROR$",
+        "placeholders": { "error": { "content": "$1" } }
+    },
+    "sorterGroup1": { "message": "Released" },
+    "sorterGroup2": { "message": "Released, Early Access" },
+    "sorterGroup3": { "message": "Exact release date" },
+    "sorterGroup4": { "message": "Month and year" },
+    "sorterGroup5": { "message": "Quarter" },
+    "sorterGroup6": { "message": "Year only" },
+    "sorterGroup7": { "message": "Coming soon" },
+    "sorterGroup8": { "message": "To be announced" },
+
     "earlyAccessLabel": { "message": "Early Access" },
     "openNewsTooltip": { "message": "Open the news list" },
-    "movedElementLog": {
-        "message": "Moved element down: appId $APPID$",
-        "placeholders": { "appid": { "content": "$1" } }
-    }
+    "otherNotesLabel": { "message": "Other notes" }
 }

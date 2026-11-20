@@ -6,19 +6,50 @@
     "modulesCardTitle": { "message": "Модули" },
 
     "moduleNotesLabel": { "message": "Сортировка списка заметок" },
-    "moduleNotesDescription": { "message": "На странице steamcommunity.com/notes/list: игры с определяемым AppID поднимаются выше разделителя, остальные — ниже." },
+    "moduleNotesDescription": { "message": "На странице steamcommunity.com/notes/list: игры с определяемым AppID поднимаются выше разделителя, остальные — ниже, в сворачиваемый список «Остальные заметки»." },
 
     "moduleWishlistLabel": { "message": "Отметка игр в раннем доступе в вишлисте" },
-    "moduleWishlistDescription": { "message": "В вашем списке желаемого Steam добавляет метку «Ранний доступ» со ссылкой на страницу новостей для уже вышедших игр в раннем доступе." },
+    "moduleWishlistDescription": { "message": "В вашем списке желаемого Steam превращает метку «Ранний доступ» у уже вышедших игр в ссылку на страницу новостей игры." },
 
-    "progressWaitingLabel": { "message": "Ожидание данных..." },
-    "progressNoGamesLabel": { "message": "Нет подходящих игр" },
-    "progressProcessingLabel": { "message": "Обработка" },
-    "progressDoneLabel": { "message": "Готово" },
+    "moduleWishlistSorterLabel": { "message": "Сортировка списка желаемого по группам" },
+    "moduleWishlistSorterDescription": { "message": "На вашем списке желаемого в режиме «По вашему предпочтению» добавляет кнопку, которая расставляет игры по группам: вышедшие, вышедшие в раннем доступе, затем невышедшие по близости даты выхода. Порядок внутри вышедших не меняется." },
+
+    "sorterButton": { "message": "Отсортировать по группам" },
+    "sorterButtonTooltip": { "message": "Вышедшие → ранний доступ → полная дата → месяц → квартал → год → «скоро» → «не объявлена»" },
+    "sorterRestoreButton": { "message": "Вернуть как было" },
+    "sorterRestoreTooltip": {
+        "message": "Вернуть порядок, сохранённый $DATE$",
+        "placeholders": { "date": { "content": "$1" } }
+    },
+    "sorterRestoreConfirm": {
+        "message": "Вернуть порядок списка желаемого, сохранённый $DATE$?",
+        "placeholders": { "date": { "content": "$1" } }
+    },
+    "sorterLoading": { "message": "Загрузка списка…" },
+    "sorterAlreadySorted": { "message": "Список уже отсортирован" },
+    "sorterConfirm": {
+        "message": "Будет перемещено игр: $COUNT$. Текущий порядок сохранится, его можно будет вернуть. Продолжить?",
+        "placeholders": { "count": { "content": "$1" } }
+    },
+    "sorterProgress": {
+        "message": "Перемещено $DONE$ / $TOTAL$",
+        "placeholders": { "done": { "content": "$1" }, "total": { "content": "$2" } }
+    },
+    "sorterDone": { "message": "Готово, обновляю страницу…" },
+    "sorterError": {
+        "message": "Ошибка: $ERROR$",
+        "placeholders": { "error": { "content": "$1" } }
+    },
+    "sorterGroup1": { "message": "Вышедшие" },
+    "sorterGroup2": { "message": "Вышедшие, ранний доступ" },
+    "sorterGroup3": { "message": "Точная дата выхода" },
+    "sorterGroup4": { "message": "Месяц и год" },
+    "sorterGroup5": { "message": "Квартал" },
+    "sorterGroup6": { "message": "Только год" },
+    "sorterGroup7": { "message": "Скоро выйдет" },
+    "sorterGroup8": { "message": "Дата не объявлена" },
+
     "earlyAccessLabel": { "message": "Ранний доступ" },
     "openNewsTooltip": { "message": "Открыть список новостей" },
-    "movedElementLog": {
-        "message": "Элемент перемещён вниз: appId $APPID$",
-        "placeholders": { "appid": { "content": "$1" } }
-    }
+    "otherNotesLabel": { "message": "Остальные заметки" }
 }

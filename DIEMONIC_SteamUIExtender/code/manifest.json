@@ -3,7 +3,7 @@
     "name": "__MSG_extName__",
     "description": "__MSG_extDescription__",
     "default_locale": "en",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "permissions": [ "storage" ],
     "host_permissions": [
         "https://steamcommunity.com/notes/list*",
@@ -19,6 +19,18 @@
             "matches": [ "https://store.steampowered.com/wishlist/*" ],
             "js": [ "modules/wishlistExtender.js" ],
             "css": [ "styles/wishlistExtender.css" ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [ "https://store.steampowered.com/wishlist/*" ],
+            "js": [ "modules/wishlistSorterBridge.js" ],
+            "run_at": "document_idle",
+            "world": "MAIN"
+        },
+        {
+            "matches": [ "https://store.steampowered.com/wishlist/*" ],
+            "js": [ "modules/wishlistSorter.js" ],
+            "css": [ "styles/wishlistSorter.css" ],
             "run_at": "document_start"
         }
     ],

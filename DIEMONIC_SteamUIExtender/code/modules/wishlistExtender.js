@@ -8,110 +8,28 @@
         return match ? match[1] : null;
     }
 
-    function hasSpawnedDiv(appId) {
-        return Boolean(document.getElementById(`diemonic-custom-label-${appId}`));
-    }
+    const BUTTON_CLASS = 'diemonic-ea-button';
 
-    function dLog(msg) {
-        console.log(
-            "%c🚫[" + chrome.i18n.getMessage("extName") + "] " + msg,
-            "background: #464646b9; color: #ff459cff",
-        );
-    }
-
-    const PROGRESS_ROOT_ID = 'diemonic-progress-root';
-    const PROGRESS_BAR_ID = 'diemonic-progress-bar';
-    const PROGRESS_TEXT_ID = 'diemonic-progress-text';
-    let progressUIDisabled = false;
-
-    function ensureProgressUI() {
-        if (progressUIDisabled || !isSteamWishlistPage() || document.getElementById(PROGRESS_ROOT_ID)) {
-            return;
-        }
-
-        const mount = () => {
-            if (document.getElementById(PROGRESS_ROOT_ID)) {
-                return;
-            }
-
-            const root = document.body || document.documentElement;
-            if (!root) {
-                requestAnimationFrame(mount);
-                return;
-            }
-
-            const wrapper = document.createElement('div');
-            wrapper.id = PROGRESS_ROOT_ID;
-
-            const text = document.createElement('div');
-            text.id = PROGRESS_TEXT_ID;
-            text.textContent = chrome.i18n.getMessage("progressWaitingLabel");
-
-            const track = document.createElement('div');
-            track.className = 'diemonic-progress-track';
-
-            const bar = document.createElement('div');
-            bar.id = PROGRESS_BAR_ID;
-            bar.className = 'diemonic-progress-fill';
-            bar.style.width = '0%';
-
-            track.appendChild(bar);
-            wrapper.appendChild(text);
-            wrapper.appendChild(track);
-            root.appendChild(wrapper);
-        };
-
-        mount();
-    }
-
-    function destroyProgressUI() {
-        const root = document.getElementById(PROGRESS_ROOT_ID);
-        if (root) {
-            root.remove();
-        }
-        progressUIDisabled = true;
-    }
-
-    function updateProgressUI(completed, total, statusText) {
-        if (progressUIDisabled) {
-            return;
-        }
-
-        ensureProgressUI();
-
-        const bar = document.getElementById(PROGRESS_BAR_ID);
-        const text = document.getElementById(PROGRESS_TEXT_ID);
-        if (!bar || !text) {
-            return;
-        }
-
-        const percent = total <= 0 ? 100 : Math.min(100, Math.round((completed / total) * 100));
-        bar.style.width = `${percent}%`;
-        text.textContent = `${statusText} ${completed}/${total} (${percent}%)`;
-    }
-
-    function getNormalizedParentText(parent) {
-        const parts = [];
-        const walker = document.createTreeWalker(parent, NodeFilter.SHOW_TEXT);
-
-        let current = walker.nextNode();
-        while (current) {
-            const chunk = (current.nodeValue || '').replace(/\s+/g, ' ').trim();
-            if (chunk) {
-                parts.push(chunk);
-            }
-            current = walker.nextNode();
-        }
-
-        return parts.join(' ');
-    }
+    const EARLY_ACCESS_TEXT_RE = /^(ранний доступ|early access)$/i;
+    const RELEASE_DATE_LABEL_RE = /^(дата выхода|release date)\s*:?$/i;
+    const DATE_ADDED_TEXT_RE = /^(дата добавления|date added|added on)/i;
 
     const MONTH_NAME_INDEX = {
         jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
         jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+        'янв': 0, 'фев': 1, 'мар': 2, 'апр': 3, 'май': 4, 'мая': 4, 'июн': 5,
+        'июл': 6, 'авг': 7, 'сен': 8, 'окт': 9, 'ноя': 10, 'дек': 11,
     };
 
+    function monthIndex(name) {
+        return MONTH_NAME_INDEX[name.toLowerCase().slice(0, 3)];
+    }
+
     function buildValidDate(year, month0, day) {
+        if (month0 === undefined) {
+            return null;
+        }
+
         const parsedDate = new Date(year, month0, day);
         if (
             Number.isNaN(parsedDate.getTime()) ||
@@ -125,57 +43,40 @@
         return parsedDate;
     }
 
-    // "Date added" labels are stripped first so the row's OTHER date (the release date) is
-    // the one left over to parse. Russian Steam UI is tried first (existing behavior), then a
-    // few alternative label/date formats for English (and other latin-script) Steam UIs.
-    const ADDED_DATE_LABEL_PATTERNS = [
-        /дата\s*добавления\s*:\s*\d{2}\.\d{2}\.\d{4}/ig,
-        /date\s*added\s*:?\s*\d{1,2}\/\d{1,2}\/\d{4}/ig,
-        /date\s*added\s*:?\s*[a-z]{3,9}\s+\d{1,2},?\s+\d{4}/ig,
-        /date\s*added\s*:?\s*\d{1,2}\s+[a-z]{3,9},?\s+\d{4}/ig,
-        /added\s*on\s*:?\s*[a-z]{3,9}\s+\d{1,2},?\s+\d{4}/ig,
-        /added\s*on\s*:?\s*\d{1,2}\s+[a-z]{3,9},?\s+\d{4}/ig,
-    ];
-
+    // Only full dates (day + month + year) are accepted. "Q1 2027", "2026", "Coming soon"
+    // and similar values mean the game is not out yet.
     const DATE_EXTRACTORS = [
-        // dd.mm.yyyy (Russian/European numeric, original behavior)
+        // dd.mm.yyyy
         {
-            re: /\b(\d{2})\.(\d{2})\.(\d{4})\b/,
+            re: /(?:^|\D)(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\D|$)/,
             build: (m) => buildValidDate(Number(m[3]), Number(m[2]) - 1, Number(m[1])),
         },
         // mm/dd/yyyy (US numeric)
         {
-            re: /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/,
+            re: /(?:^|\D)(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\D|$)/,
             build: (m) => buildValidDate(Number(m[3]), Number(m[1]) - 1, Number(m[2])),
         },
-        // "Jun 21, 2024" / "June 21 2024"
+        // "10 июн. 2026 г." / "10 июня 2026"
         {
-            re: /\b([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})\b/,
-            build: (m) => {
-                const month0 = MONTH_NAME_INDEX[m[1].toLowerCase().slice(0, 3)];
-                return month0 === undefined ? null : buildValidDate(Number(m[3]), month0, Number(m[2]));
-            },
+            re: /(\d{1,2})\s+([а-яё]{3,})\.?\s+(\d{4})/i,
+            build: (m) => buildValidDate(Number(m[3]), monthIndex(m[2]), Number(m[1])),
         },
-        // "21 Jun, 2024" / "21 June 2024"
+        // "Jun 10, 2026" / "June 10 2026"
         {
-            re: /\b(\d{1,2})\s+([A-Za-z]{3,9}),?\s+(\d{4})\b/,
-            build: (m) => {
-                const month0 = MONTH_NAME_INDEX[m[2].toLowerCase().slice(0, 3)];
-                return month0 === undefined ? null : buildValidDate(Number(m[3]), month0, Number(m[1]));
-            },
+            re: /\b([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})\b/,
+            build: (m) => buildValidDate(Number(m[3]), monthIndex(m[1]), Number(m[2])),
+        },
+        // "10 Jun, 2026" / "10 June 2026"
+        {
+            re: /\b(\d{1,2})\s+([A-Za-z]{3,9})\.?,?\s+(\d{4})\b/,
+            build: (m) => buildValidDate(Number(m[3]), monthIndex(m[2]), Number(m[1])),
         },
     ];
 
-    function parseParentDate(parent) {
-        const text = getNormalizedParentText(parent);
-
-        let withoutAddedDate = text;
-        ADDED_DATE_LABEL_PATTERNS.forEach((pattern) => {
-            withoutAddedDate = withoutAddedDate.replace(pattern, ' ');
-        });
-
+    function parseReleaseDate(text) {
+        const normalized = (text || '').replace(/\s+/g, ' ').trim();
         for (const extractor of DATE_EXTRACTORS) {
-            const match = withoutAddedDate.match(extractor.re);
+            const match = normalized.match(extractor.re);
             if (!match) {
                 continue;
             }
@@ -199,146 +100,119 @@
         return normalized.getTime() <= today.getTime();
     }
 
-    const earlyAccessCache = new Map();
-    const earlyAccessRequestCache = new Map();
-
-    async function isEarlyAccessByApi(appId) {
-        if (earlyAccessCache.has(appId)) {
-            return earlyAccessCache.get(appId);
-        }
-
-        if (earlyAccessRequestCache.has(appId)) {
-            return earlyAccessRequestCache.get(appId);
-        }
-
-        const requestPromise = fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`)
-            .then((response) => {
-                if (!response.ok) {
-                    return false;
-                }
-
-                return response.json();
-            })
-            .then((json) => {
-                const hasEarlyAccess = JSON.stringify(json).includes('Early Access');
-                earlyAccessCache.set(appId, hasEarlyAccess);
-                return hasEarlyAccess;
-            })
-            .catch(() => {
-                earlyAccessCache.set(appId, false);
-                return false;
-            })
-            .finally(() => {
-                earlyAccessRequestCache.delete(appId);
-            });
-
-        earlyAccessRequestCache.set(appId, requestPromise);
-        return requestPromise;
+    function leafText(element) {
+        return (element.textContent || '').replace(/\s+/g, ' ').trim();
     }
 
-    async function addTestDivForUniqueAppLinks() {
-        const links = document.querySelectorAll('a[href^="https://store.steampowered.com/app/"]');
-        const uniqueLinks = new Map();
-
-        for (const link of links) {
-            const appId = getSteamAppIdFromHref(link.href);
-            if (!appId || hasSpawnedDiv(appId) || uniqueLinks.has(appId)) {
+    function hasEarlyAccessBadge(row) {
+        for (const span of row.querySelectorAll('span')) {
+            if (span.classList.contains(BUTTON_CLASS) || span.children.length > 0) {
                 continue;
             }
 
-            uniqueLinks.set(appId, link);
+            if (EARLY_ACCESS_TEXT_RE.test(leafText(span))) {
+                return true;
+            }
         }
 
-        const tasks = [];
-        for (const [appId, link] of uniqueLinks) {
-            const parent = link.parentElement;
-            if (!parent) {
-                continue;
-            }
+        return false;
+    }
 
-            const parentDate = parseParentDate(parent);
-            if (!parentDate || !isPastOrTodayDate(parentDate)) {
-                continue;
+    // The button goes right before the "Date added: ..." text in the row's top-right corner,
+    // so it never covers the game's title, categories or Steam's own tags.
+    function findDateAddedElement(row) {
+        for (const element of row.querySelectorAll('div, span')) {
+            if (element.children.length === 0 && DATE_ADDED_TEXT_RE.test(leafText(element))) {
+                return element;
             }
-
-            tasks.push({ appId, link, parent });
         }
 
-        const totalTasks = tasks.length;
-        if (totalTasks === 0) {
-            updateProgressUI(0, 0, chrome.i18n.getMessage("progressNoGamesLabel"));
+        return null;
+    }
+
+    function isReleased(row) {
+        for (const element of row.querySelectorAll('div, span')) {
+            if (element.children.length > 0 || !RELEASE_DATE_LABEL_RE.test(leafText(element))) {
+                continue;
+            }
+
+            const valueElement = element.nextElementSibling;
+            if (!valueElement) {
+                return false;
+            }
+
+            const releaseDate = parseReleaseDate(valueElement.textContent);
+            return Boolean(releaseDate) && isPastOrTodayDate(releaseDate);
+        }
+
+        return false;
+    }
+
+    function getRowAppId(row) {
+        const link = row.querySelector('a[href^="https://store.steampowered.com/app/"]');
+        return link ? getSteamAppIdFromHref(link.href) : null;
+    }
+
+    function stopEvent(event) {
+        event.stopPropagation();
+    }
+
+    function createEarlyAccessButton(appId) {
+        const button = document.createElement('span');
+        button.className = BUTTON_CLASS;
+        button.textContent = chrome.i18n.getMessage("earlyAccessLabel");
+        button.title = chrome.i18n.getMessage("openNewsTooltip");
+        button.dataset.appId = appId;
+        button.setAttribute('role', 'link');
+
+        button.addEventListener('mousedown', stopEvent);
+        button.addEventListener('pointerdown', stopEvent);
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            window.open(`https://store.steampowered.com/news/app/${appId}`, '_blank');
+        });
+
+        return button;
+    }
+
+    function removeButtons(buttons) {
+        buttons.forEach((button) => button.remove());
+    }
+
+    function processRow(row) {
+        const appId = getRowAppId(row);
+        const anchor = appId && hasEarlyAccessBadge(row) && isReleased(row) ? findDateAddedElement(row) : null;
+
+        const buttons = Array.from(row.querySelectorAll(`.${BUTTON_CLASS}`));
+
+        if (!anchor) {
+            removeButtons(buttons);
             return;
         }
 
-        let completedTasks = 0;
-        updateProgressUI(completedTasks, totalTasks, chrome.i18n.getMessage("progressProcessingLabel"));
+        const existing = buttons.length === 1 ? buttons[0] : null;
+        const isUpToDate =
+            existing &&
+            existing.dataset.appId === appId &&
+            existing.nextElementSibling === anchor;
 
-        for (const task of tasks) {
-            const { appId, link, parent } = task;
-
-            const isEarlyAccess = await isEarlyAccessByApi(appId);
-            if (!isEarlyAccess || hasSpawnedDiv(appId)) {
-                completedTasks += 1;
-                updateProgressUI(completedTasks, totalTasks, chrome.i18n.getMessage("progressProcessingLabel"));
-                continue;
-            }
-
-            const actualParent = link.parentElement || parent;
-            if (!actualParent) {
-                completedTasks += 1;
-                updateProgressUI(completedTasks, totalTasks, chrome.i18n.getMessage("progressProcessingLabel"));
-                continue;
-            }
-
-            const div = document.createElement('div');
-            div.className = 'diemonic-custom-label-div';
-            div.textContent = chrome.i18n.getMessage("earlyAccessLabel");
-            div.title = chrome.i18n.getMessage("openNewsTooltip");
-            div.id = `diemonic-custom-label-${appId}`;
-            div.dataset.steamAppId = appId;
-            div.addEventListener('click', () => {
-                window.open(`https://store.steampowered.com/news/app/${appId}`, '_blank');
-            });
-
-            actualParent.appendChild(div);
-
-            const grandParent = actualParent.parentElement.parentElement;
-            if (grandParent) {
-                grandParent.appendChild(actualParent.parentElement);
-                dLog(chrome.i18n.getMessage("movedElementLog", [appId]));
-            }
-
-            completedTasks += 1;
-            updateProgressUI(
-                completedTasks,
-                totalTasks,
-                completedTasks === totalTasks ? chrome.i18n.getMessage("progressDoneLabel") : chrome.i18n.getMessage("progressProcessingLabel")
-            );
+        if (isUpToDate) {
+            return;
         }
+
+        removeButtons(buttons);
+        anchor.before(createEarlyAccessButton(appId));
+    }
+
+    function processWishlist() {
+        document.querySelectorAll('[data-index]').forEach(processRow);
     }
 
     let processingScheduled = false;
     let observerStarted = false;
-    let processingInProgress = false;
-    let rerunRequested = false;
 
-    async function runProcessingQueue() {
-        if (processingInProgress) {
-            rerunRequested = true;
-            return;
-        }
-
-        processingInProgress = true;
-        do {
-            rerunRequested = false;
-            await addTestDivForUniqueAppLinks();
-        } while (rerunRequested);
-
-        processingInProgress = false;
-        destroyProgressUI();
-    }
-
-    function scheduleAddTestDivs() {
+    function scheduleProcessing() {
         if (processingScheduled) {
             return;
         }
@@ -346,7 +220,7 @@
         processingScheduled = true;
         requestAnimationFrame(() => {
             processingScheduled = false;
-            runProcessingQueue();
+            processWishlist();
         });
     }
 
@@ -356,15 +230,18 @@
         }
 
         const observer = new MutationObserver((mutations) => {
-            const hasRelevantChanges = mutations.some((mutation) => mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0);
+            const hasRelevantChanges = mutations.some(
+                (mutation) => mutation.type === 'characterData' || mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0
+            );
             if (hasRelevantChanges) {
-                scheduleAddTestDivs();
+                scheduleProcessing();
             }
         });
 
         observer.observe(document.body, {
             childList: true,
-            subtree: true
+            subtree: true,
+            characterData: true,
         });
 
         observerStarted = true;
@@ -375,17 +252,12 @@
             return;
         }
 
-        ensureProgressUI();
-        scheduleAddTestDivs();
+        scheduleProcessing();
         startWishlistObserver();
     }
 
     chrome.storage.sync.get({ moduleWishlistExtenderEnabled: true }, (settings) => {
         if (!settings.moduleWishlistExtenderEnabled) return;
-
-        if (isSteamWishlistPage()) {
-            ensureProgressUI();
-        }
 
         if (document.readyState === 'complete') {
             init();

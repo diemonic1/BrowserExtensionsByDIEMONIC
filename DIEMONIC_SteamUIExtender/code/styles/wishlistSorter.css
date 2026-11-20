@@ -1,0 +1,34 @@
+#diemonic-sorter-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 8px;
+}
+
+.diemonic-sorter-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 2px;
+  background: #1a9fff;
+  color: #0e141b;
+  font-family: "Motiva Sans", sans-serif;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.diemonic-sorter-button:hover:not(:disabled) {
+  background: #66c0ff;
+}
+
+.diemonic-sorter-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.diemonic-sorter-status {
+  color: #8f98a0;
+  font-size: 12px;
+}

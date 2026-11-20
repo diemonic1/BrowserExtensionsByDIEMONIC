@@ -53,6 +53,118 @@
         return li;
     }
 
+    const SEPARATOR_CLASS = 'diemonic-notes-separator';
+    const TOGGLE_CLASS = 'diemonic-notes-toggle';
+    const OTHER_ITEM_CLASS = 'diemonic-notes-other';
+
+    let otherNotesExpanded = false;
+
+    function isServiceItem(item) {
+        return item.classList.contains(SEPARATOR_CLASS) || item.classList.contains(TOGGLE_CLASS);
+    }
+
+    function createToggleItem() {
+        const li = document.createElement('li');
+        li.className = TOGGLE_CLASS;
+        li.style.listStyle = 'none';
+        li.style.margin = '0 0 8px';
+
+        const button = document.createElement('div');
+        button.setAttribute('role', 'button');
+        button.tabIndex = 0;
+        button.style.display = 'flex';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'space-between';
+        button.style.gap = '8px';
+        button.style.padding = '6px 8px';
+        button.style.cursor = 'pointer';
+        button.style.userSelect = 'none';
+        button.style.color = 'rgba(255, 255, 255, 0.75)';
+        button.style.borderRadius = '3px';
+        button.style.width = 'fit-content';
+        button.addEventListener('mouseenter', () => {
+            button.style.background = 'rgba(255, 255, 255, 0.08)';
+        });
+        button.addEventListener('mouseleave', () => {
+            button.style.background = '';
+        });
+
+        const label = document.createElement('span');
+        label.textContent = chrome.i18n.getMessage("otherNotesLabel");
+
+        const arrow = document.createElement('span');
+        arrow.className = 'diemonic-notes-toggle-arrow';
+
+        button.appendChild(label);
+        button.appendChild(arrow);
+        li.appendChild(button);
+
+        const toggle = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            otherNotesExpanded = !otherNotesExpanded;
+
+            const list = li.parentElement;
+            if (!list) {
+                return;
+            }
+
+            applyingReorder = true;
+            try {
+                applyCollapsedState(list);
+            } finally {
+                applyingReorder = false;
+            }
+        };
+
+        button.addEventListener('click', toggle);
+        button.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                toggle(event);
+            }
+        });
+
+        return li;
+    }
+
+    function applyCollapsedState(list) {
+        const toggleItem = list.querySelector(`:scope > li.${TOGGLE_CLASS}`);
+        if (toggleItem) {
+            const button = toggleItem.firstElementChild;
+            const arrow = toggleItem.querySelector('.diemonic-notes-toggle-arrow');
+            const arrowText = otherNotesExpanded ? '▲' : '▼';
+            const expandedText = String(otherNotesExpanded);
+
+            if (arrow && arrow.textContent !== arrowText) {
+                arrow.textContent = arrowText;
+            }
+            if (button && button.getAttribute('aria-expanded') !== expandedText) {
+                button.setAttribute('aria-expanded', expandedText);
+            }
+        }
+
+        const display = otherNotesExpanded ? '' : 'none';
+        list.querySelectorAll(`:scope > li.${OTHER_ITEM_CLASS}`).forEach((item) => {
+            if (item.style.display !== display) {
+                item.style.display = display;
+            }
+        });
+    }
+
+    function markOtherItems(idItems, noIdItems) {
+        idItems.forEach((item) => {
+            if (item.classList.contains(OTHER_ITEM_CLASS)) {
+                item.classList.remove(OTHER_ITEM_CLASS);
+                item.style.display = '';
+            }
+        });
+        noIdItems.forEach((item) => {
+            if (!item.classList.contains(OTHER_ITEM_CLASS)) {
+                item.classList.add(OTHER_ITEM_CLASS);
+            }
+        });
+    }
+
     function reorderNotesList(list) {
         const allItems = Array.from(list.querySelectorAll(':scope > li'));
         if (!allItems.length) {
@@ -63,7 +175,7 @@
         const noIdItems = [];
 
         for (const item of allItems) {
-            if (item.classList.contains('diemonic-notes-separator')) {
+            if (isServiceItem(item)) {
                 continue;
             }
 
@@ -83,35 +195,46 @@
         }
 
         if (!idItems.length || !noIdItems.length) {
-            list.querySelectorAll(':scope > li.diemonic-notes-separator').forEach((separator) => separator.remove());
+            list.querySelectorAll(`:scope > li.${SEPARATOR_CLASS}, :scope > li.${TOGGLE_CLASS}`).forEach((item) => item.remove());
+            markOtherItems([...idItems, ...noIdItems], []);
             return false;
         }
 
-        const separators = Array.from(list.querySelectorAll(':scope > li.diemonic-notes-separator'));
-        const itemsWithoutSeparators = allItems.filter((item) => !item.classList.contains('diemonic-notes-separator'));
+        markOtherItems(idItems, noIdItems);
+
+        const separators = Array.from(list.querySelectorAll(`:scope > li.${SEPARATOR_CLASS}`));
+        const toggles = Array.from(list.querySelectorAll(`:scope > li.${TOGGLE_CLASS}`));
+        const itemsWithoutService = allItems.filter((item) => !isServiceItem(item));
         const desiredOrder = [...idItems, ...noIdItems];
 
         const isSameOrder =
-            itemsWithoutSeparators.length === desiredOrder.length &&
-            itemsWithoutSeparators.every((item, index) => item === desiredOrder[index]);
+            itemsWithoutService.length === desiredOrder.length &&
+            itemsWithoutService.every((item, index) => item === desiredOrder[index]);
 
-        const hasSingleSeparatorInRightPlace =
+        const hasServiceItemsInRightPlace =
             separators.length === 1 &&
+            toggles.length === 1 &&
             separators[0].previousElementSibling === idItems[idItems.length - 1] &&
-            separators[0].nextElementSibling === noIdItems[0];
+            separators[0].nextElementSibling === toggles[0] &&
+            toggles[0].nextElementSibling === noIdItems[0];
 
-        if (isSameOrder && hasSingleSeparatorInRightPlace) {
+        if (isSameOrder && hasServiceItemsInRightPlace) {
+            applyCollapsedState(list);
             return false;
         }
 
         separators.forEach((separator) => separator.remove());
+        const toggleItem = toggles[0] || createToggleItem();
+        toggles.slice(1).forEach((toggle) => toggle.remove());
 
         const fragment = document.createDocumentFragment();
         idItems.forEach((item) => fragment.appendChild(item));
         fragment.appendChild(createSeparatorItem());
+        fragment.appendChild(toggleItem);
         noIdItems.forEach((item) => fragment.appendChild(item));
         list.appendChild(fragment);
 
+        applyCollapsedState(list);
         return true;
     }
 
